@@ -1,0 +1,376 @@
+[[
+    {
+      "id": "a1",
+      "type": "action",
+      "name": "Deal Breaker",
+      "count": 2,
+      "effect": "Steal a full property set from another player."
+    },
+    {
+      "id": "a2",
+      "type": "action",
+      "name": "Just Say No",
+      "count": 3,
+      "effect": "Cancel any action card played against you."
+    },
+    {
+      "id": "a3",
+      "type": "action",
+      "name": "Sly Deal",
+      "count": 3,
+      "effect": "Steal one property from another player."
+    },
+    {
+      "id": "a4",
+      "type": "action",
+      "name": "Force Deal",
+      "count": 4,
+      "effect": "Swap one of your properties with another player's."
+    },
+    {
+      "id": "a5",
+      "type": "action",
+      "name": "Debt Collector",
+      "count": 3,
+      "effect": "Force another player to pay you $5M."
+    },
+    {
+      "id": "a6",
+      "type": "action",
+      "name": "It's My Birthday",
+      "count": 3,
+      "effect": "All other players must give you $2M."
+    },
+    {
+      "id": "a7",
+      "type": "action",
+      "name": "Pass Go",
+      "count": 10,
+      "effect": "Draw two cards from the draw pile."
+    },
+    {
+      "id": "a8",
+      "type": "action",
+      "name": "House",
+      "count": 3,
+      "effect": "Add to a full set to increase rent."
+    },
+    {
+      "id": "a9",
+      "type": "action",
+      "name": "Hotel",
+      "count": 3,
+      "effect": "Add to a full set to maximize rent."
+    },
+    {
+      "id": "a10",
+      "type": "action",
+      "name": "Double The Rent",
+      "count": 2,
+      "effect": "Double the rent on your next rent collection."
+    },
+    {
+        "id": "p1",
+        "type": "property",
+        "name": "Boardwalk",
+        "colors": ["dark blue"],
+        "value": 4,
+        "setSize": 2,
+        "rentValues": [3, 8]
+      },
+      {
+        "id": "p2",
+        "type": "property",
+        "name": "Park Place",
+        "colors": ["dark blue"],
+        "value": 4,
+        "setSize": 2,
+        "rentValues": [3, 8]
+      },
+      {
+        "id": "p3",
+        "type": "property",
+        "name": "Baltic Avenue",
+        "colors": ["brown"],
+        "value": 1,
+        "setSize": 2,
+        "rentValues": [1, 2]
+      },
+      {
+        "id": "p4",
+        "type": "property",
+        "name": "Mediterranean Avenue",
+        "colors": ["brown"],
+        "value": 1,
+        "setSize": 2,
+        "rentValues": [1, 2]
+      },
+      {
+        "id": "p5",
+        "type": "property",
+        "name": "Vermont Avenue",
+        "colors": ["light blue"],
+        "value": 1,
+        "setSize": 3,
+        "rentValues": [1, 2, 3]
+      },
+      {
+        "id": "p6",
+        "type": "property",
+        "name": "Connecticut Avenue",
+        "colors": ["light blue"],
+        "value": 1,
+        "setSize": 3,
+        "rentValues": [1, 2, 3]
+      },
+      {
+        "id": "p7",
+        "type": "property",
+        "name": "Oriental Avenue",
+        "colors": ["light blue"],
+        "value": 1,
+        "setSize": 3,
+        "rentValues": [1, 2, 3]
+      },
+      {
+        "id": "p8",
+        "type": "property",
+        "name": "Illinois Avenue",
+        "colors": ["red"],
+        "value": 3,
+        "setSize": 3,
+        "rentValues": [2, 3, 6]
+      },
+      {
+        "id": "p9",
+        "type": "property",
+        "name": "Indiana Avenue",
+        "colors": ["red"],
+        "value": 3,
+        "setSize": 3,
+        "rentValues": [2, 3, 6]
+      },
+      {
+        "id": "p10",
+        "type": "property",
+        "name": "Kentucky Avenue",
+        "colors": ["red"],
+        "value": 3,
+        "setSize": 3,
+        "rentValues": [2, 3, 6]
+      },
+      {
+        "id": "p11",
+        "type": "property",
+        "name": "North Carolina Avenue",
+        "colors": ["dark green"],
+        "value": 4,
+        "setSize": 3,
+        "rentValues": [2, 4, 7]
+      },
+      {
+        "id": "p12",
+        "type": "property",
+        "name": "Pacific Avenue",
+        "colors": ["dark green"],
+        "value": 4,
+        "setSize": 3,
+        "rentValues": [2, 4, 7]
+      },
+      {
+        "id": "p13",
+        "type": "property",
+        "name": "Pennyslvania Avenue",
+        "colors": ["dark green"],
+        "value": 4,
+        "setSize": 3,
+        "rentValues": [2, 4, 7]
+      },
+      {
+        "id": "p14",
+        "type": "property",
+        "name": "New York Avenue",
+        "colors": ["orange"],
+        "value": 2,
+        "setSize": 3,
+        "rentValues": [1, 3, 5]
+      },
+      {
+        "id": "p15",
+        "type": "property",
+        "name": "St. James Avenue",
+        "colors": ["orange"],
+        "value": 2,
+        "setSize": 3,
+        "rentValues": [1, 3, 5]
+      },
+      {
+        "id": "p16",
+        "type": "property",
+        "name": "Tennessee Avenue",
+        "colors": ["orange"],
+        "value": 2,
+        "setSize": 3,
+        "rentValues": [1, 3, 5]
+      },
+      {
+        "id": "p17",
+        "type": "property",
+        "name": "St. Charles Place",
+        "colors": ["pink"],
+        "value": 2,
+        "setSize": 3,
+        "rentValues": [1, 2, 4]
+      },
+      {
+        "id": "p18",
+        "type": "property",
+        "name": "Virginia Avenue",
+        "colors": ["pink"],
+        "value": 2,
+        "setSize": 3,
+        "rentValues": [1, 2, 4]
+      },
+      {
+        "id": "p19",
+        "type": "property",
+        "name": "States Avenue",
+        "colors": ["pink"],
+        "value": 2,
+        "setSize": 3,
+        "rentValues": [1, 2, 4]
+      },
+      {
+        "id": "p20",
+        "type": "property",
+        "name": "Venthor Avenue",
+        "colors": ["yellow"],
+        "value": 3,
+        "setSize": 3,
+        "rentValues": [2, 4, 6]
+      },
+      {
+        "id": "p21",
+        "type": "property",
+        "name": "Marvin Gardens",
+        "colors": ["yellow"],
+        "value": 3,
+        "setSize": 3,
+        "rentValues": [2, 4, 6]
+      },
+      {
+        "id": "p22",
+        "type": "property",
+        "name": "Atlantic Avenue",
+        "colors": ["yellow"],
+        "value": 3,
+        "setSize": 3,
+        "rentValues": [2, 4, 6]
+      },
+      {
+        "id": "p23",
+        "type": "property",
+        "name": "Water Works",
+        "colors": ["light green"],
+        "value": 2,
+        "setSize": 2,
+        "rentValues": [1, 2]
+      },
+      {
+        "id": "p24",
+        "type": "property",
+        "name": "Electric Company",
+        "colors": ["light green"],
+        "value": 2,
+        "setSize": 2,
+        "rentValues": [1, 2]
+      },
+      {
+        "id": "p25",
+        "type": "property",
+        "name": "Short Line",
+        "colors": ["black"],
+        "value": 2,
+        "setSize": 4,
+        "rentValues": [1, 2, 3, 4]
+      },
+      {
+        "id": "p26",
+        "type": "property",
+        "name": "B. & O.Railroad",
+        "colors": ["black"],
+        "value": 2,
+        "setSize": 4,
+        "rentValues": [1, 2, 3, 4]
+      },
+      {
+        "id": "p27",
+        "type": "property",
+        "name": "Reading Railroad",
+        "colors": ["black"],
+        "value": 2,
+        "setSize": 4,
+        "rentValues": [1, 2, 3, 4]
+      },
+      {
+        "id": "p28",
+        "type": "property",
+        "name": "Pennyslvania Railroad",
+        "colors": ["black"],
+        "value": 2,
+        "setSize": 4,
+        "rentValues": [1, 2, 3, 4]
+      },
+      {
+        "id": "pw1",
+        "type": "property",
+        "name": "Wild Card (Purple/Orange)",
+        "colors": ["purple", "orange"],
+        "value": 3,
+        "setSize": 3,
+        "rentValues": [2, 4, 6]
+      },
+    {
+        "id": "m1",
+        "type": "money",
+        "name": "$1M",
+        "value": 1,
+        "count": 6
+      },
+      {
+        "id": "m2",
+        "type": "money",
+        "name": "$2M",
+        "value": 2,
+        "count": 5
+      },
+      {
+        "id": "m3",
+        "type": "money",
+        "name": "$3M",
+        "value": 3,
+        "count": 3
+      },
+      {
+        "id": "m4",
+        "type": "money",
+        "name": "$4M",
+        "value": 4,
+        "count": 3
+      },
+      {
+        "id": "m5",
+        "type": "money",
+        "name": "$5M",
+        "value": 5,
+        "count": 2
+      },
+      {
+        "id": "m6",
+        "type": "money",
+        "name": "$10M",
+        "value": 10,
+        "count": 1
+      }
+  ]
+  ]

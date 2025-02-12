@@ -1,0 +1,22 @@
+version: "3.5"
+services:
+  node-api:
+    container_name: monopoly-deal-app
+    restart: always
+    ports:
+      - "3000:3000"
+    image: monopoly-deal-server
+    build: ./
+    networks:
+      - monopoly-deal-network
+  mongo-db:
+    image: mongo
+    container_name: monopoly-deal-mongo-db
+    ports:
+      - "27017-27019:27017-27019"
+    networks:
+      - monopoly-deal-network
+networks:
+  monopoly-deal-network:
+    name: monopoly-deal-network
+    driver: bridge
