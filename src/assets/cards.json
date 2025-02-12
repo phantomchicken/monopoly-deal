@@ -1,376 +1,772 @@
-[[
+[
     {
-      "id": "a1",
-      "type": "action",
-      "name": "Deal Breaker",
-      "count": 2,
-      "effect": "Steal a full property set from another player."
+        "type": "action",
+        "name": "Deal Breaker",
+        "effect": "Steal a full property set from another player.",
+        "imageName": "dealbreaker.png"
     },
     {
-      "id": "a2",
-      "type": "action",
-      "name": "Just Say No",
-      "count": 3,
-      "effect": "Cancel any action card played against you."
+        "type": "action",
+        "name": "Deal Breaker",
+        "effect": "Steal a full property set from another player.",
+        "imageName": "dealbreaker.png"
     },
     {
-      "id": "a3",
-      "type": "action",
-      "name": "Sly Deal",
-      "count": 3,
-      "effect": "Steal one property from another player."
+        "type": "action",
+        "name": "Just Say No",
+        "effect": "Cancel any action card played against you.",
+        "imageName": "justsayno.png"
     },
     {
-      "id": "a4",
-      "type": "action",
-      "name": "Force Deal",
-      "count": 4,
-      "effect": "Swap one of your properties with another player's."
+        "type": "action",
+        "name": "Just Say No",
+        "effect": "Cancel any action card played against you.",
+        "imageName": "justsayno.png"
     },
     {
-      "id": "a5",
-      "type": "action",
-      "name": "Debt Collector",
-      "count": 3,
-      "effect": "Force another player to pay you $5M."
+        "type": "action",
+        "name": "Just Say No",
+        "effect": "Cancel any action card played against you.",
+        "imageName": "justsayno.png"
     },
     {
-      "id": "a6",
-      "type": "action",
-      "name": "It's My Birthday",
-      "count": 3,
-      "effect": "All other players must give you $2M."
+        "type": "action",
+        "name": "Sly Deal",
+        "effect": "Steal one property from another player.",
+        "imageName": "slydeal.png"
     },
     {
-      "id": "a7",
-      "type": "action",
-      "name": "Pass Go",
-      "count": 10,
-      "effect": "Draw two cards from the draw pile."
+        "type": "action",
+        "name": "Sly Deal",
+        "effect": "Steal one property from another player.",
+        "imageName": "slydeal.png"
     },
     {
-      "id": "a8",
-      "type": "action",
-      "name": "House",
-      "count": 3,
-      "effect": "Add to a full set to increase rent."
+        "type": "action",
+        "name": "Sly Deal",
+        "effect": "Steal one property from another player.",
+        "imageName": "slydeal.png"
     },
     {
-      "id": "a9",
-      "type": "action",
-      "name": "Hotel",
-      "count": 3,
-      "effect": "Add to a full set to maximize rent."
+        "type": "action",
+        "name": "Force Deal",
+        "effect": "Swap one of your properties with another player's.",
+        "imageName": "forceddeal.png"
     },
     {
-      "id": "a10",
-      "type": "action",
-      "name": "Double The Rent",
-      "count": 2,
-      "effect": "Double the rent on your next rent collection."
+        "type": "action",
+        "name": "Force Deal",
+        "effect": "Swap one of your properties with another player's.",
+        "imageName": "forceddeal.png"
     },
     {
-        "id": "p1",
+        "type": "action",
+        "name": "Force Deal",
+        "effect": "Swap one of your properties with another player's.",
+        "imageName": "forceddeal.png"
+    },
+    {
+        "type": "action",
+        "name": "Force Deal",
+        "effect": "Swap one of your properties with another player's.",
+        "imageName": "forceddeal.png"
+    },
+    {
+        "type": "action",
+        "name": "Debt Collector",
+        "effect": "Force another player to pay you $5M.",
+        "imageName": "debtcollector.png"
+    },
+    {
+        "type": "action",
+        "name": "Debt Collector",
+        "effect": "Force another player to pay you $5M.",
+        "imageName": "debtcollector.png"
+    },
+    {
+        "type": "action",
+        "name": "Debt Collector",
+        "effect": "Force another player to pay you $5M.",
+        "imageName": "debtcollector.png"
+    },
+    {
+        "type": "action",
+        "name": "It's My Birthday",
+        "effect": "All other players must give you $2M.",
+        "imageName": "itsmybirthday.png"
+    },
+    {
+        "type": "action",
+        "name": "It's My Birthday",
+        "effect": "All other players must give you $2M.",
+        "imageName": "itsmybirthday.png"
+    },
+    {
+        "type": "action",
+        "name": "It's My Birthday",
+        "effect": "All other players must give you $2M.",
+        "imageName": "itsmybirthday.png"
+    },
+    {
+        "type": "action",
+        "name": "Pass Go",
+        "effect": "Draw two cards from the draw pile.",
+        "imageName": "passgo.png"
+    },
+    {
+        "type": "action",
+        "name": "Pass Go",
+        "effect": "Draw two cards from the draw pile.",
+        "imageName": "passgo.png"
+    },
+    {
+        "type": "action",
+        "name": "Pass Go",
+        "effect": "Draw two cards from the draw pile.",
+        "imageName": "passgo.png"
+    },
+    {
+        "type": "action",
+        "name": "Pass Go",
+        "effect": "Draw two cards from the draw pile.",
+        "imageName": "passgo.png"
+    },
+    {
+        "type": "action",
+        "name": "Pass Go",
+        "effect": "Draw two cards from the draw pile.",
+        "imageName": "passgo.png"
+    },
+    {
+        "type": "action",
+        "name": "Pass Go",
+        "effect": "Draw two cards from the draw pile.",
+        "imageName": "passgo.png"
+    },
+    {
+        "type": "action",
+        "name": "Pass Go",
+        "effect": "Draw two cards from the draw pile.",
+        "imageName": "passgo.png"
+    },
+    {
+        "type": "action",
+        "name": "Pass Go",
+        "effect": "Draw two cards from the draw pile.",
+        "imageName": "passgo.png"
+    },
+    {
+        "type": "action",
+        "name": "Pass Go",
+        "effect": "Draw two cards from the draw pile.",
+        "imageName": "passgo.png"
+    },
+    {
+        "type": "action",
+        "name": "Pass Go",
+        "effect": "Draw two cards from the draw pile.",
+        "imageName": "passgo.png"
+    },
+    {
+        "type": "action",
+        "name": "House",
+        "effect": "Add to a full set to increase rent.",
+        "imageName": "house.png"
+    },
+    {
+        "type": "action",
+        "name": "House",
+        "effect": "Add to a full set to increase rent.",
+        "imageName": "house.png"
+    },
+    {
+        "type": "action",
+        "name": "House",
+        "effect": "Add to a full set to increase rent.",
+        "imageName": "house.png"
+    },
+    {
+        "type": "action",
+        "name": "Hotel",
+        "effect": "Add to a full set to maximize rent.",
+        "imageName": "hotel.png"
+    },
+    {
+        "type": "action",
+        "name": "Hotel",
+        "effect": "Add to a full set to maximize rent.",
+        "imageName": "hotel.png"
+    },
+    {
+        "type": "action",
+        "name": "Hotel",
+        "effect": "Add to a full set to maximize rent.",
+        "imageName": "hotel.png"
+    },
+    {
+        "type": "action",
+        "name": "Double The Rent",
+        "effect": "Double the rent on your next rent collection.",
+        "imageName": "doubletherent.png"
+    },
+    {
+        "type": "action",
+        "name": "Double The Rent",
+        "effect": "Double the rent on your next rent collection.",
+        "imageName": "doubletherent.png"
+    },
+    {
         "type": "property",
         "name": "Boardwalk",
-        "colors": ["dark blue"],
+        "colors": [
+            "dark blue"
+        ],
         "value": 4,
         "setSize": 2,
-        "rentValues": [3, 8]
-      },
-      {
-        "id": "p2",
+        "rentValues": [
+            3,
+            8
+        ],
+        "imageName": "boardwalk.png"
+    },
+    {
         "type": "property",
         "name": "Park Place",
-        "colors": ["dark blue"],
+        "colors": [
+            "dark blue"
+        ],
         "value": 4,
         "setSize": 2,
-        "rentValues": [3, 8]
-      },
-      {
-        "id": "p3",
+        "rentValues": [
+            3,
+            8
+        ],
+        "imageName": "parkplace.png"
+    },
+    {
         "type": "property",
         "name": "Baltic Avenue",
-        "colors": ["brown"],
+        "colors": [
+            "brown"
+        ],
         "value": 1,
         "setSize": 2,
-        "rentValues": [1, 2]
-      },
-      {
-        "id": "p4",
+        "rentValues": [
+            1,
+            2
+        ],
+        "imageName": "balticavenue.png"
+    },
+    {
         "type": "property",
         "name": "Mediterranean Avenue",
-        "colors": ["brown"],
+        "colors": [
+            "brown"
+        ],
         "value": 1,
         "setSize": 2,
-        "rentValues": [1, 2]
-      },
-      {
-        "id": "p5",
+        "rentValues": [
+            1,
+            2
+        ],
+        "imageName": "mediterraneanavenue.png"
+    },
+    {
         "type": "property",
         "name": "Vermont Avenue",
-        "colors": ["light blue"],
+        "colors": [
+            "light blue"
+        ],
         "value": 1,
         "setSize": 3,
-        "rentValues": [1, 2, 3]
-      },
-      {
-        "id": "p6",
+        "rentValues": [
+            1,
+            2,
+            3
+        ],
+        "imageName": "vermontavenue.png"
+    },
+    {
         "type": "property",
         "name": "Connecticut Avenue",
-        "colors": ["light blue"],
+        "colors": [
+            "light blue"
+        ],
         "value": 1,
         "setSize": 3,
-        "rentValues": [1, 2, 3]
-      },
-      {
-        "id": "p7",
+        "rentValues": [
+            1,
+            2,
+            3
+        ],
+        "imageName": "connecticutavenue.png"
+    },
+    {
         "type": "property",
         "name": "Oriental Avenue",
-        "colors": ["light blue"],
+        "colors": [
+            "light blue"
+        ],
         "value": 1,
         "setSize": 3,
-        "rentValues": [1, 2, 3]
-      },
-      {
-        "id": "p8",
+        "rentValues": [
+            1,
+            2,
+            3
+        ],
+        "imageName": "orientalavenue.png"
+    },
+    {
         "type": "property",
         "name": "Illinois Avenue",
-        "colors": ["red"],
+        "colors": [
+            "red"
+        ],
         "value": 3,
         "setSize": 3,
-        "rentValues": [2, 3, 6]
-      },
-      {
-        "id": "p9",
+        "rentValues": [
+            2,
+            3,
+            6
+        ],
+        "imageName": "illinoisavenue.png"
+    },
+    {
         "type": "property",
         "name": "Indiana Avenue",
-        "colors": ["red"],
+        "colors": [
+            "red"
+        ],
         "value": 3,
         "setSize": 3,
-        "rentValues": [2, 3, 6]
-      },
-      {
-        "id": "p10",
+        "rentValues": [
+            2,
+            3,
+            6
+        ],
+        "imageName": "indianaavenue.png"
+    },
+    {
         "type": "property",
         "name": "Kentucky Avenue",
-        "colors": ["red"],
+        "colors": [
+            "red"
+        ],
         "value": 3,
         "setSize": 3,
-        "rentValues": [2, 3, 6]
-      },
-      {
-        "id": "p11",
+        "rentValues": [
+            2,
+            3,
+            6
+        ],
+        "imageName": "kentuckyavenue.png"
+    },
+    {
         "type": "property",
         "name": "North Carolina Avenue",
-        "colors": ["dark green"],
+        "colors": [
+            "dark green"
+        ],
         "value": 4,
         "setSize": 3,
-        "rentValues": [2, 4, 7]
-      },
-      {
-        "id": "p12",
+        "rentValues": [
+            2,
+            4,
+            7
+        ],
+        "imageName": "northcarolinaavenue.png"
+    },
+    {
         "type": "property",
         "name": "Pacific Avenue",
-        "colors": ["dark green"],
+        "colors": [
+            "dark green"
+        ],
         "value": 4,
         "setSize": 3,
-        "rentValues": [2, 4, 7]
-      },
-      {
-        "id": "p13",
+        "rentValues": [
+            2,
+            4,
+            7
+        ],
+        "imageName": "pacificavenue.png"
+    },
+    {
         "type": "property",
         "name": "Pennyslvania Avenue",
-        "colors": ["dark green"],
+        "colors": [
+            "dark green"
+        ],
         "value": 4,
         "setSize": 3,
-        "rentValues": [2, 4, 7]
-      },
-      {
-        "id": "p14",
+        "rentValues": [
+            2,
+            4,
+            7
+        ],
+        "imageName": "default.png"
+    },
+    {
         "type": "property",
         "name": "New York Avenue",
-        "colors": ["orange"],
+        "colors": [
+            "orange"
+        ],
         "value": 2,
         "setSize": 3,
-        "rentValues": [1, 3, 5]
-      },
-      {
-        "id": "p15",
+        "rentValues": [
+            1,
+            3,
+            5
+        ],
+        "imageName": "newyorkavenue.png"
+    },
+    {
         "type": "property",
         "name": "St. James Avenue",
-        "colors": ["orange"],
+        "colors": [
+            "orange"
+        ],
         "value": 2,
         "setSize": 3,
-        "rentValues": [1, 3, 5]
-      },
-      {
-        "id": "p16",
+        "rentValues": [
+            1,
+            3,
+            5
+        ],
+        "imageName": "default.png"
+    },
+    {
         "type": "property",
         "name": "Tennessee Avenue",
-        "colors": ["orange"],
+        "colors": [
+            "orange"
+        ],
         "value": 2,
         "setSize": 3,
-        "rentValues": [1, 3, 5]
-      },
-      {
-        "id": "p17",
+        "rentValues": [
+            1,
+            3,
+            5
+        ],
+        "imageName": "tennesseeavenue.png"
+    },
+    {
         "type": "property",
         "name": "St. Charles Place",
-        "colors": ["pink"],
+        "colors": [
+            "pink"
+        ],
         "value": 2,
         "setSize": 3,
-        "rentValues": [1, 2, 4]
-      },
-      {
-        "id": "p18",
+        "rentValues": [
+            1,
+            2,
+            4
+        ],
+        "imageName": "stcharlesplace.png"
+    },
+    {
         "type": "property",
         "name": "Virginia Avenue",
-        "colors": ["pink"],
+        "colors": [
+            "pink"
+        ],
         "value": 2,
         "setSize": 3,
-        "rentValues": [1, 2, 4]
-      },
-      {
-        "id": "p19",
+        "rentValues": [
+            1,
+            2,
+            4
+        ],
+        "imageName": "virginiaavenue.png"
+    },
+    {
         "type": "property",
         "name": "States Avenue",
-        "colors": ["pink"],
+        "colors": [
+            "pink"
+        ],
         "value": 2,
         "setSize": 3,
-        "rentValues": [1, 2, 4]
-      },
-      {
-        "id": "p20",
+        "rentValues": [
+            1,
+            2,
+            4
+        ],
+        "imageName": "statesavenue.png"
+    },
+    {
         "type": "property",
         "name": "Venthor Avenue",
-        "colors": ["yellow"],
+        "colors": [
+            "yellow"
+        ],
         "value": 3,
         "setSize": 3,
-        "rentValues": [2, 4, 6]
-      },
-      {
-        "id": "p21",
+        "rentValues": [
+            2,
+            4,
+            6
+        ],
+        "imageName": "marvingardens.png"
+    },
+    {
         "type": "property",
         "name": "Marvin Gardens",
-        "colors": ["yellow"],
+        "colors": [
+            "yellow"
+        ],
         "value": 3,
         "setSize": 3,
-        "rentValues": [2, 4, 6]
-      },
-      {
-        "id": "p22",
+        "rentValues": [
+            2,
+            4,
+            6
+        ],
+        "imageName": "marvingardens.png"
+    },
+    {
         "type": "property",
         "name": "Atlantic Avenue",
-        "colors": ["yellow"],
+        "colors": [
+            "yellow"
+        ],
         "value": 3,
         "setSize": 3,
-        "rentValues": [2, 4, 6]
-      },
-      {
-        "id": "p23",
+        "rentValues": [
+            2,
+            4,
+            6
+        ],
+        "imageName": "atlanticavenue.png"
+    },
+    {
         "type": "property",
         "name": "Water Works",
-        "colors": ["light green"],
+        "colors": [
+            "light green"
+        ],
         "value": 2,
         "setSize": 2,
-        "rentValues": [1, 2]
-      },
-      {
-        "id": "p24",
+        "rentValues": [
+            1,
+            2
+        ],
+        "imageName": "waterworks.png"
+    },
+    {
         "type": "property",
         "name": "Electric Company",
-        "colors": ["light green"],
+        "colors": [
+            "light green"
+        ],
         "value": 2,
         "setSize": 2,
-        "rentValues": [1, 2]
-      },
-      {
-        "id": "p25",
+        "rentValues": [
+            1,
+            2
+        ],
+        "imageName": "electriccompany.png"
+    },
+    {
         "type": "property",
         "name": "Short Line",
-        "colors": ["black"],
+        "colors": [
+            "black"
+        ],
         "value": 2,
         "setSize": 4,
-        "rentValues": [1, 2, 3, 4]
-      },
-      {
-        "id": "p26",
+        "rentValues": [
+            1,
+            2,
+            3,
+            4
+        ],
+        "imageName": "shortline.png"
+    },
+    {
         "type": "property",
         "name": "B. & O.Railroad",
-        "colors": ["black"],
+        "colors": [
+            "black"
+        ],
         "value": 2,
         "setSize": 4,
-        "rentValues": [1, 2, 3, 4]
-      },
-      {
-        "id": "p27",
+        "rentValues": [
+            1,
+            2,
+            3,
+            4
+        ],
+        "imageName": "b&orailroad.png"
+    },
+    {
         "type": "property",
         "name": "Reading Railroad",
-        "colors": ["black"],
+        "colors": [
+            "black"
+        ],
         "value": 2,
         "setSize": 4,
-        "rentValues": [1, 2, 3, 4]
-      },
-      {
-        "id": "p28",
+        "rentValues": [
+            1,
+            2,
+            3,
+            4
+        ],
+        "imageName": "readingrailroad.png"
+    },
+    {
         "type": "property",
         "name": "Pennyslvania Railroad",
-        "colors": ["black"],
+        "colors": [
+            "black"
+        ],
         "value": 2,
         "setSize": 4,
-        "rentValues": [1, 2, 3, 4]
-      },
-      {
-        "id": "pw1",
+        "rentValues": [
+            1,
+            2,
+            3,
+            4
+        ],
+        "imageName": "default.png"
+    },
+    {
         "type": "property",
         "name": "Wild Card (Purple/Orange)",
-        "colors": ["purple", "orange"],
+        "colors": [
+            "purple",
+            "orange"
+        ],
         "value": 3,
         "setSize": 3,
-        "rentValues": [2, 4, 6]
-      },
+        "rentValues": [
+            2,
+            4,
+            6
+        ],
+        "imageName": "default.png"
+    },
     {
-        "id": "m1",
         "type": "money",
         "name": "$1M",
         "value": 1,
-        "count": 6
-      },
-      {
-        "id": "m2",
+        "imageName": "1m.png"
+    },
+    {
+        "type": "money",
+        "name": "$1M",
+        "value": 1,
+        "imageName": "1m.png"
+    },
+    {
+        "type": "money",
+        "name": "$1M",
+        "value": 1,
+        "imageName": "1m.png"
+    },
+    {
+        "type": "money",
+        "name": "$1M",
+        "value": 1,
+        "imageName": "1m.png"
+    },
+    {
+        "type": "money",
+        "name": "$1M",
+        "value": 1,
+        "imageName": "1m.png"
+    },
+    {
+        "type": "money",
+        "name": "$1M",
+        "value": 1,
+        "imageName": "1m.png"
+    },
+    {
         "type": "money",
         "name": "$2M",
         "value": 2,
-        "count": 5
-      },
-      {
-        "id": "m3",
+        "imageName": "2m.png"
+    },
+    {
+        "type": "money",
+        "name": "$2M",
+        "value": 2,
+        "imageName": "2m.png"
+    },
+    {
+        "type": "money",
+        "name": "$2M",
+        "value": 2,
+        "imageName": "2m.png"
+    },
+    {
+        "type": "money",
+        "name": "$2M",
+        "value": 2,
+        "imageName": "2m.png"
+    },
+    {
+        "type": "money",
+        "name": "$2M",
+        "value": 2,
+        "imageName": "2m.png"
+    },
+    {
         "type": "money",
         "name": "$3M",
         "value": 3,
-        "count": 3
-      },
-      {
-        "id": "m4",
+        "imageName": "3m.png"
+    },
+    {
+        "type": "money",
+        "name": "$3M",
+        "value": 3,
+        "imageName": "3m.png"
+    },
+    {
+        "type": "money",
+        "name": "$3M",
+        "value": 3,
+        "imageName": "3m.png"
+    },
+    {
         "type": "money",
         "name": "$4M",
         "value": 4,
-        "count": 3
-      },
-      {
-        "id": "m5",
+        "imageName": "4m.png"
+    },
+    {
+        "type": "money",
+        "name": "$4M",
+        "value": 4,
+        "imageName": "4m.png"
+    },
+    {
+        "type": "money",
+        "name": "$4M",
+        "value": 4,
+        "imageName": "4m.png"
+    },
+    {
         "type": "money",
         "name": "$5M",
         "value": 5,
-        "count": 2
-      },
-      {
-        "id": "m6",
+        "imageName": "5m.png"
+    },
+    {
+        "type": "money",
+        "name": "$5M",
+        "value": 5,
+        "imageName": "5m.png"
+    },
+    {
         "type": "money",
         "name": "$10M",
         "value": 10,
-        "count": 1
-      }
-  ]
-  ]
+        "imageName": "10m.png"
+    }
+]

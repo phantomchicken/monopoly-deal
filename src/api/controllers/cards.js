@@ -16,7 +16,7 @@ const addCard = async (req, res) => {
 // Get all cards
 const getCards = async (req, res) => {
     try {
-        const cards = await Card.find(); // Get all cards from the database
+      const cards = await Card.find(); // Get all cards from the database
         res.status(200).json(cards); // Return all cards
     } catch (error) {
         res.status(500).json({ error: error.message }); // Handle any errors

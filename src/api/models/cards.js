@@ -9,6 +9,9 @@ const cardSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true
+    },
+    imageName: {
+        type: String
     }
 }, { discriminatorKey: 'type' });  // 'type' field will act as the discriminator
 
@@ -51,7 +54,7 @@ const actionCardSchema = new mongoose.Schema({
     }
 });
 
-var Card = mongoose.model('Card', cardSchema);
+var Card = mongoose.model('Card', cardSchema, 'Cards');
 var PropertyCard = Card.discriminator('property', propertyCardSchema);
 var MoneyCard = Card.discriminator('money', moneyCardSchema);
 var ActionCard = Card.discriminator('action', actionCardSchema);
