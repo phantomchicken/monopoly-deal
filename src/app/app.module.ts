@@ -9,12 +9,15 @@ import { TemplateComponent } from './template/template.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
+import { PlayComponent } from './play/play.component';
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
     AppComponent,
     CardsComponent,
-    TemplateComponent
+    TemplateComponent,
+    PlayComponent
   ],
   imports: [
     BrowserModule,
@@ -23,6 +26,7 @@ import { MatIconModule } from '@angular/material/icon';
     BrowserAnimationsModule,
     MatToolbarModule,
     MatIconModule,
+    FormsModule
   ],
   providers: [],
   bootstrap: [TemplateComponent]

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CardServiceService } from 'src/card-service.service';
+import { CardService } from 'src/app/card.service';
 import { Card } from '../classes/card';
 
 @Component({
@@ -9,12 +9,11 @@ import { Card } from '../classes/card';
 })
 export class CardsComponent implements OnInit {
 
-  constructor(private cardService: CardServiceService) { }
+  constructor(private cardService: CardService) { }
 
   public cards: Card[] = [];
   ngOnInit(): void {
     var cards = this.cardService.getCards().then(cards => {
-      console.log(cards);
       this.cards = this.shuffle(cards);
     });
   }

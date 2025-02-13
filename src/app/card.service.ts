@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { environment } from './environments/environment';
+import { environment } from '../environments/environment';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Card } from 'src/app/classes/card';
 
@@ -7,7 +7,7 @@ import { Card } from 'src/app/classes/card';
 @Injectable({
   providedIn: 'root'
 })
-export class CardServiceService {
+export class CardService {
 
   constructor(private http: HttpClient) {}
   private apiUrl = environment.apiUrl; 
