@@ -216,6 +216,124 @@
         "imageName": "doubletherent.png"
     },
     {
+        "type": "action",
+        "name": "Rent Brown & Light Blue",
+        "effect": "Charge rent for Brown or Light Blue properties.",
+        "imageName": "rentbrownlightblue.png"
+    },
+    {
+        "type": "action",
+        "name": "Rent Brown & Light Blue",
+        "effect": "Charge rent for Brown or Light Blue properties.",
+        "imageName": "rentbrownlightblue.png"
+    },
+    {
+        "type": "action",
+        "name": "Rent Dark Green & Dark Blue",
+        "effect": "Charge rent for Dark Green or Dark Blue properties.",
+        "imageName": "rentdarkgreendarkblue.png"
+    },
+    {
+        "type": "action",
+        "name": "Rent Dark Green & Dark Blue",
+        "effect": "Charge rent for Dark Green or Dark Blue properties.",
+        "imageName": "rentdarkgreendarkblue.png"
+    },
+    {
+        "type": "action",
+        "name": "Rent Pink & Orange",
+        "effect": "Charge rent for Pink or Orange properties.",
+        "imageName": "rentpinkorange.png"
+    },
+    {
+        "type": "action",
+        "name": "Rent Pink & Orange",
+        "effect": "Charge rent for Pink or Orange properties.",
+        "imageName": "rentpinkorange.png"
+    },
+    {
+        "type": "action",
+        "name": "Rent Red & Yellow",
+        "effect": "Charge rent for Red or Yellow properties.",
+        "imageName": "rentredyellow.png"
+    },
+    {
+        "type": "action",
+        "name": "Rent Red & Yellow",
+        "effect": "Charge rent for Red or Yellow properties.",
+        "imageName": "rentredyellow.png"
+    },
+    {
+        "type": "action",
+        "name": "Rent Black & Light Green",
+        "effect": "Charge rent for Black or Light Green properties.",
+        "imageName": "rentblacklightgreen.png"
+    },
+    {
+        "type": "action",
+        "name": "Rent Black & Light Green",
+        "effect": "Charge rent for Black or Light Green properties.",
+        "imageName": "rentblacklightgreen.png"
+    },
+    {
+        "type": "action",
+        "name": "Rent Wildcard",
+        "effect": "Charge rent for any color of properties.",
+        "imageName": "rentwildcard.png"
+    },
+    {
+        "type": "action",
+        "name": "Rent Wildcard",
+        "effect": "Charge rent for any color of properties.",
+        "imageName": "rentwildcard.png"
+    },
+    {
+        "type": "action",
+        "name": "Rent Wildcard",
+        "effect": "Charge rent for any set of properties.",
+        "imageName": "rentwildcard.png"
+    },
+    {
+        "type": "property",
+        "name": "Wildcard",
+        "colors": [
+            "dark blue",
+            "dark green",
+            "light blue",
+            "light green",
+            "orange",
+            "pink",
+            "red",
+            "yellow",
+            "black",
+            "brown"
+        ],
+        "value": 0,
+        "setSize": 3,
+        "rentValues": [],
+        "imageName": "wc.png"
+    },
+    {
+        "type": "property",
+        "name": "Wildcard",
+        "colors": [
+            "dark blue",
+            "dark green",
+            "light blue",
+            "light green",
+            "orange",
+            "pink",
+            "red",
+            "yellow",
+            "black",
+            "brown"
+        ],
+        "value": 0,
+        "setSize": 3,
+        "rentValues": [],
+        "imageName": "wc.png"
+    },
+    {
         "type": "property",
         "name": "Boardwalk",
         "colors": [
@@ -423,7 +541,7 @@
     },
     {
         "type": "property",
-        "name": "St. James Avenue",
+        "name": "St. James Place",
         "colors": [
             "orange"
         ],
@@ -434,7 +552,7 @@
             3,
             5
         ],
-        "imageName": "default.png"
+        "imageName": "stjamesplace.png"
     },
     {
         "type": "property",

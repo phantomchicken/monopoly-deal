@@ -1,0 +1,32 @@
+.navbar .navbar-nav .nav-link:hover {
+    background-color: #7bafd1;
+    color: #fff;
+  }  
+.navbar .navbar-nav .nav-link {
+  padding: 0.6em;
+  font-size: 1.2em;
+  transition: all 0.5s;
+}
+.navbar .navbar-brand {
+  padding: 0 0.6em;
+  font-size: 1.5em;
+  font-weight: bold;
+}
+
+.navbar-brand:hover {
+    color:green;
+    text-shadow: rgb(208, 194, 194) 0.3em 0.3em 0.3em;
+}
+
+@media only screen and (min-width: 992px) {
+  .navbar {
+    padding: 0;
+  }
+  .navbar .navbar-nav .nav-link {
+    padding: 1em 0.7em;
+  }
+  .navbar .navbar-brand {
+    padding: 0 0.8em;
+  }
+}
+

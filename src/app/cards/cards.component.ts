@@ -15,8 +15,22 @@ export class CardsComponent implements OnInit {
   ngOnInit(): void {
     var cards = this.cardService.getCards().then(cards => {
       console.log(cards);
-      this.cards = cards;
+      this.cards = this.shuffle(cards);
     });
+  }
+
+  isActionCard(card: Card): boolean {
+    return false;
+  }
+
+  shuffle(cards: Card[]): Card[]{
+    var currentIndex = cards.length;
+    while (currentIndex > 0){
+      currentIndex--;
+      var randomIndex = Math.floor(Math.random() * currentIndex);
+      [cards[currentIndex], cards[randomIndex]] = [cards[randomIndex], cards[currentIndex]]; // swap cards 
+    }
+    return cards;
   }
 
 }

@@ -30,6 +30,9 @@ docker exec -it monopoly-deal-mongo-db mongosh
 use monopoly-deal
 db.Cards.deleteMany({})
 
+docker exec -it monopoly-deal-mongo-db mongosh --eval "use monopoly-deal; use Cards; db.Cards.deleteMany({});"
+
+
 docker cp ./cards.json monopoly-deal-mongo-db:/cards.json
 docker exec -it monopoly-deal-mongo-db mongoimport --db monopoly-deal --collection Cards --mode upsert --upsertFields make --jsonArray --file cards.json
 docker exec -it monopoly-deal-mongo-db rm -rf cards.json

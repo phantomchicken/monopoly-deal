@@ -5,6 +5,12 @@
                 <img class="card-img-top img-fluid" [src]="'assets/' + card.imageName" alt="{{ card.name }}">
                 <div class="card-body">
                     <h5 class="card-title">{{ card.name }}</h5>
+                    <p *ngIf="card.type === 'action'" class="card-text">{{ card.effect }}</p>
+                    <p *ngIf="card.type === 'property'" class="card-text">Value {{ card.value }}</p>
+                    <div *ngIf="card.type === 'property'"> 
+                        <p *ngFor="let rent of card.rentValues; index as i">Rent for {{i+1}} property: {{ rent }}</p>
+                    </div>
+
                 </div>
             </div>
         </div>
