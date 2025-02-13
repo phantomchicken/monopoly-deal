@@ -3,6 +3,7 @@ export class Card {
     _id: string = "" ;
     type: string = "";
     name: string = "";
+    imageName: string = "";
 }
 
 export class MoneyCard extends Card{

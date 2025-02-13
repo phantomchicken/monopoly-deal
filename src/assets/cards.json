@@ -49,25 +49,25 @@
     },
     {
         "type": "action",
-        "name": "Force Deal",
+        "name": "Forced Deal",
         "effect": "Swap one of your properties with another player's.",
         "imageName": "forceddeal.png"
     },
     {
         "type": "action",
-        "name": "Force Deal",
+        "name": "Forced Deal",
         "effect": "Swap one of your properties with another player's.",
         "imageName": "forceddeal.png"
     },
     {
         "type": "action",
-        "name": "Force Deal",
+        "name": "Forced Deal",
         "effect": "Swap one of your properties with another player's.",
         "imageName": "forceddeal.png"
     },
     {
         "type": "action",
-        "name": "Force Deal",
+        "name": "Forced Deal",
         "effect": "Swap one of your properties with another player's.",
         "imageName": "forceddeal.png"
     },
@@ -393,7 +393,7 @@
     },
     {
         "type": "property",
-        "name": "Pennyslvania Avenue",
+        "name": "Pennsylvania Avenue",
         "colors": [
             "dark green"
         ],
@@ -404,7 +404,7 @@
             4,
             7
         ],
-        "imageName": "default.png"
+        "imageName": "pennsylvaniaavenue.png"
     },
     {
         "type": "property",
@@ -619,7 +619,7 @@
     },
     {
         "type": "property",
-        "name": "Pennyslvania Railroad",
+        "name": "Pennsylvania Railroad",
         "colors": [
             "black"
         ],
@@ -631,7 +631,7 @@
             3,
             4
         ],
-        "imageName": "default.png"
+        "imageName": "pennsylvaniarailroad.png"
     },
     {
         "type": "property",
