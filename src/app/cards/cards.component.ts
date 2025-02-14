@@ -13,7 +13,7 @@ export class CardsComponent implements OnInit {
 
   public cards: Card[] = [];
   ngOnInit(): void {
-    var cards = this.cardService.getCards().then(cards => {
+    this.cardService.getCards().subscribe(cards => {
       this.cards = this.shuffle(cards);
     });
   }

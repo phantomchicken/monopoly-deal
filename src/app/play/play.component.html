@@ -1,74 +1,95 @@
-<p>play works!</p>
-<form (ngSubmit)="setup()">
-    <input type="text" name="name" [(ngModel)]="name">
-    <input type="number" name="numberOfPlayers" [(ngModel)]="numberOfPlayers">
-    <input type="submit" value="submit">
-</form>
-
-<div *ngIf="start" class="container-fluid mt-4">
-    <div class="row">
-        <!-- Top Left: Player 1 -->
-        <div class="col-3 text-center player-box" *ngIf="players.length > 0">
-            <h5>{{ players[0].name }}</h5>
-            <p>Money: {{ players[0].bank.length }}</p>
-            <div class="hand">
-                <img *ngFor="let card of players[0].hand" class="card-img" [src]="'assets/' + card.imageName" alt="{{ card.name }}">
-            </div>
-            <div class="properties">
-                <img *ngFor="let prop of players[0].properties" class="card-img" [src]="'assets/' + prop.imageName" alt="{{ prop.name }}">
-            </div>
-        </div>
-
-        <!-- Top Right: Player 2 -->
-        <div class="col-3 text-center player-box" *ngIf="players.length > 1">
-            <h5>{{ players[1].name }}</h5>
-            <p>Money: {{ players[1].bank.length }}</p>
-            <div class="hand">
-                <img *ngFor="let card of players[1].hand" class="card-img" [src]="'assets/' + card.imageName" alt="{{ card.name }}">
-            </div>
-            <div class="properties">
-                <img *ngFor="let prop of players[1].properties" class="card-img" [src]="'assets/' + prop.imageName" alt="{{ prop.name }}">
-            </div>
+<div class="container-fluid p-3">
+    <!-- Setup Form -->
+    <div class="row mb-4">
+        <div class="col-md-6 mx-auto">
+            <form (ngSubmit)="setup()" class="d-flex gap-2">
+                <input type="text" class="form-control" name="name" [(ngModel)]="name" placeholder="Name">
+                <input type="number" class="form-control" name="numberOfPlayers" [(ngModel)]="numberOfPlayers" min="2" max="5"
+                    placeholder="Players">
+                <button type="submit" class="btn btn-primary">Start</button>
+            </form>
         </div>
     </div>
     
-    <!-- Center Area: Deck and Discard Pile -->
-    <div class="row mt-4 justify-content-center">
-        <div class="col-2 card shadow-sm text-center">
-            <img class="card-img-top img-fluid" [src]="'assets/deck.jpg'" alt="deck">
-            <div class="card-body">
-                <h5 *ngIf="deck.length" class="card-title">{{ deck.length }}</h5>
-
-            </div>
-        </div>
-        <div class="col-2 text-center">
-            <h5>Discard Pile</h5>
-            <img class="card-img" src="assets/discard.png" alt="Discard Pile">
+    <div class="row mb-4">
+        <div class="col-md-6 mx-auto">
+            <h2 class="text-center">
+                Current Player: {{ currentPlayer?.name || "Waiting..." }}
+            </h2>
+            <button class="btn btn-danger" (click)="endTurn()">Pass</button>
         </div>
     </div>
-    
-    <div class="row mt-4">
-        <!-- Bottom Left: Player 3 -->
-        <div class="col-3 text-center player-box" *ngIf="players.length > 2">
-            <h5>{{ players[2].name }}</h5>
-            <p>Money: {{ players[2].bank.length }}</p>
-            <div class="hand">
-                <img *ngFor="let card of players[2].hand" class="card-img" [src]="'assets/' + card.imageName" alt="{{ card.name }}">
-            </div>
-            <div class="properties">
-                <img *ngFor="let prop of players[2].properties" class="card-img" [src]="'assets/' + prop.imageName" alt="{{ prop.name }}">
+
+    <!-- Game Board -->
+    <div *ngIf="start" class="container-fluid">
+        <!-- Other Players -->
+        <div class="row" *ngFor="let player of players.slice(1); let i = index">
+            <div class="col-12 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ player.name }} (Money: {{ player.bank.length }})</h5>
+                        <!-- Hand -->
+                        <div class="d-flex overflow-auto gap-2 mb-3">
+                            <img *ngFor="let card of player.hand" [src]="'assets/' + card.imageName" [alt]="card.name"
+                                style="width: 100px; height: auto;">
+                        </div>
+                        <!-- Properties -->
+                        <div class="d-flex overflow-auto gap-2">
+                            <img *ngFor="let prop of player.properties" [src]="'assets/' + prop.imageName"
+                                [alt]="prop.name" style="width: 100px; height: auto;">
+                        </div>
+                        <!-- Bank -->
+                        <div class="d-flex overflow-auto gap-2">
+                            <img *ngFor="let prop of player.bank" [src]="'assets/' + prop.imageName"
+                                [alt]="prop.name" style="width: 100px; height: auto;">
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-        
-        <!-- Bottom Right: Player 4 -->
-        <div class="col-3 text-center player-box" *ngIf="players.length > 3">
-            <h5>{{ players[3].name }}</h5>
-            <p>Money: {{ players[3].bank.length }}</p>
-            <div class="hand">
-                <img *ngFor="let card of players[3].hand" class="card-img" [src]="'assets/' + card.imageName" alt="{{ card.name }}">
+
+        <!-- Deck Area -->
+        <div class="row justify-content-center mb-4">
+            <div class="col-auto">
+                <div class="d-flex gap-4 align-items-center">
+                    <div class="text-center">
+                        <img [src]="'assets/deck.jpg'" alt="deck" style="width: 100px; height: auto;">
+                        <div class="mt-2">Draw ({{ deck.length }})</div>
+                    </div>
+                    <div class="text-center">
+                        <img *ngIf="discard.length" src="assets/{{discard[discard.length-1].imageName}}" alt="Discard Pile" style="width: 100px; height: auto;">
+                        <div class="mt-2">Discard ({{ discard.length }})</div>
+                    </div>
+                </div>
             </div>
-            <div class="properties">
-                <img *ngFor="let prop of players[3].properties" class="card-img" [src]="'assets/' + prop.imageName" alt="{{ prop.name }}">
+        </div>
+
+        <!-- Player 1 -->
+        <div class="row mb-4" *ngIf="players.length > 0">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ players[0].name }}</h5>
+                        <!-- Hand -->
+                        <div class="d-flex overflow-auto gap-2 mb-3">
+                            <img *ngFor="let card of players[0].hand" [src]="'assets/' + card.imageName"
+                                [alt]="card.name" style="width: 100px; height: auto;"
+                                (click)="playCard(players[0],card)">
+                        </div>
+                        <!-- Properties -->
+                        <h6 class="card-title">(Properties:)</h6>
+                        <div class="d-flex overflow-auto gap-2 mb-3">
+                            <img *ngFor="let prop of players[0].properties" [src]="'assets/' + prop.imageName"
+                                [alt]="prop.name" style="width: 100px; height: auto;">
+                        </div>
+                        <!-- Bank -->
+                        <h6 class="card-title">(Money: {{ getBankTotal(players[0]) }})</h6>
+                        <div class="d-flex overflow-auto gap-2">
+                            <img *ngFor="let prop of players[0].bank" [src]="'assets/' + prop.imageName"
+                                [alt]="prop.name" style="width: 100px; height: auto;">
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

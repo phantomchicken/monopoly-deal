@@ -3,295 +3,344 @@
         "type": "action",
         "name": "Deal Breaker",
         "effect": "Steal a full property set from another player.",
-        "imageName": "dealbreaker.png"
+        "imageName": "dealbreaker.png",
+        "value": 5
     },
     {
         "type": "action",
         "name": "Deal Breaker",
         "effect": "Steal a full property set from another player.",
-        "imageName": "dealbreaker.png"
+        "imageName": "dealbreaker.png",
+        "value": 5
     },
     {
         "type": "action",
         "name": "Just Say No",
         "effect": "Cancel any action card played against you.",
-        "imageName": "justsayno.png"
+        "imageName": "justsayno.png",
+        "value": 4
     },
     {
         "type": "action",
         "name": "Just Say No",
         "effect": "Cancel any action card played against you.",
-        "imageName": "justsayno.png"
+        "imageName": "justsayno.png",
+        "value": 4
     },
     {
         "type": "action",
         "name": "Just Say No",
         "effect": "Cancel any action card played against you.",
-        "imageName": "justsayno.png"
+        "imageName": "justsayno.png",
+        "value": 4
     },
     {
         "type": "action",
         "name": "Sly Deal",
         "effect": "Steal one property from another player.",
-        "imageName": "slydeal.png"
+        "imageName": "slydeal.png",
+        "value": 3
     },
     {
         "type": "action",
         "name": "Sly Deal",
         "effect": "Steal one property from another player.",
-        "imageName": "slydeal.png"
+        "imageName": "slydeal.png",
+        "value": 3
     },
     {
         "type": "action",
         "name": "Sly Deal",
         "effect": "Steal one property from another player.",
-        "imageName": "slydeal.png"
+        "imageName": "slydeal.png",
+        "value": 3
     },
     {
         "type": "action",
         "name": "Forced Deal",
         "effect": "Swap one of your properties with another player's.",
-        "imageName": "forceddeal.png"
+        "imageName": "forceddeal.png",
+        "value": 3
     },
     {
         "type": "action",
         "name": "Forced Deal",
         "effect": "Swap one of your properties with another player's.",
-        "imageName": "forceddeal.png"
+        "imageName": "forceddeal.png",
+        "value": 3
     },
     {
         "type": "action",
         "name": "Forced Deal",
         "effect": "Swap one of your properties with another player's.",
-        "imageName": "forceddeal.png"
+        "imageName": "forceddeal.png",
+        "value": 3
     },
     {
         "type": "action",
         "name": "Forced Deal",
         "effect": "Swap one of your properties with another player's.",
-        "imageName": "forceddeal.png"
+        "imageName": "forceddeal.png",
+        "value": 3
     },
     {
         "type": "action",
         "name": "Debt Collector",
         "effect": "Force another player to pay you $5M.",
-        "imageName": "debtcollector.png"
+        "imageName": "debtcollector.png",
+        "value": 3
     },
     {
         "type": "action",
         "name": "Debt Collector",
         "effect": "Force another player to pay you $5M.",
-        "imageName": "debtcollector.png"
+        "imageName": "debtcollector.png",
+        "value": 3
     },
     {
         "type": "action",
         "name": "Debt Collector",
         "effect": "Force another player to pay you $5M.",
-        "imageName": "debtcollector.png"
+        "imageName": "debtcollector.png",
+        "value": 3
     },
     {
         "type": "action",
         "name": "It's My Birthday",
         "effect": "All other players must give you $2M.",
-        "imageName": "itsmybirthday.png"
+        "imageName": "itsmybirthday.png",
+        "value": 2
     },
     {
         "type": "action",
         "name": "It's My Birthday",
         "effect": "All other players must give you $2M.",
-        "imageName": "itsmybirthday.png"
+        "imageName": "itsmybirthday.png",
+        "value": 2
     },
     {
         "type": "action",
         "name": "It's My Birthday",
         "effect": "All other players must give you $2M.",
-        "imageName": "itsmybirthday.png"
+        "imageName": "itsmybirthday.png",
+        "value": 2
     },
     {
         "type": "action",
         "name": "Pass Go",
         "effect": "Draw two cards from the draw pile.",
-        "imageName": "passgo.png"
+        "imageName": "passgo.png",
+        "value": 1
     },
     {
         "type": "action",
         "name": "Pass Go",
         "effect": "Draw two cards from the draw pile.",
-        "imageName": "passgo.png"
+        "imageName": "passgo.png",
+        "value": 1
     },
     {
         "type": "action",
         "name": "Pass Go",
         "effect": "Draw two cards from the draw pile.",
-        "imageName": "passgo.png"
+        "imageName": "passgo.png",
+        "value": 1
     },
     {
         "type": "action",
         "name": "Pass Go",
         "effect": "Draw two cards from the draw pile.",
-        "imageName": "passgo.png"
+        "imageName": "passgo.png",
+        "value": 1
     },
     {
         "type": "action",
         "name": "Pass Go",
         "effect": "Draw two cards from the draw pile.",
-        "imageName": "passgo.png"
+        "imageName": "passgo.png",
+        "value": 1
     },
     {
         "type": "action",
         "name": "Pass Go",
         "effect": "Draw two cards from the draw pile.",
-        "imageName": "passgo.png"
+        "imageName": "passgo.png",
+        "value": 1
     },
     {
         "type": "action",
         "name": "Pass Go",
         "effect": "Draw two cards from the draw pile.",
-        "imageName": "passgo.png"
+        "imageName": "passgo.png",
+        "value": 1
     },
     {
         "type": "action",
         "name": "Pass Go",
         "effect": "Draw two cards from the draw pile.",
-        "imageName": "passgo.png"
+        "imageName": "passgo.png",
+        "value": 1
     },
     {
         "type": "action",
         "name": "Pass Go",
         "effect": "Draw two cards from the draw pile.",
-        "imageName": "passgo.png"
+        "imageName": "passgo.png",
+        "value": 1
     },
     {
         "type": "action",
         "name": "Pass Go",
         "effect": "Draw two cards from the draw pile.",
-        "imageName": "passgo.png"
+        "imageName": "passgo.png",
+        "value": 1
     },
     {
         "type": "action",
         "name": "House",
         "effect": "Add to a full set to increase rent.",
-        "imageName": "house.png"
+        "imageName": "house.png",
+        "value": 3
     },
     {
         "type": "action",
         "name": "House",
         "effect": "Add to a full set to increase rent.",
-        "imageName": "house.png"
+        "imageName": "house.png",
+        "value": 3
     },
     {
         "type": "action",
         "name": "House",
         "effect": "Add to a full set to increase rent.",
-        "imageName": "house.png"
+        "imageName": "house.png",
+        "value": 3
     },
     {
         "type": "action",
         "name": "Hotel",
         "effect": "Add to a full set to maximize rent.",
-        "imageName": "hotel.png"
+        "imageName": "hotel.png",
+        "value": 4
     },
     {
         "type": "action",
         "name": "Hotel",
         "effect": "Add to a full set to maximize rent.",
-        "imageName": "hotel.png"
+        "imageName": "hotel.png",
+        "value": 4
     },
     {
         "type": "action",
         "name": "Hotel",
         "effect": "Add to a full set to maximize rent.",
-        "imageName": "hotel.png"
+        "imageName": "hotel.png",
+        "value": 4
     },
     {
         "type": "action",
         "name": "Double The Rent",
         "effect": "Double the rent on your next rent collection.",
-        "imageName": "doubletherent.png"
+        "imageName": "doubletherent.png",
+        "value": 1
     },
     {
         "type": "action",
         "name": "Double The Rent",
         "effect": "Double the rent on your next rent collection.",
-        "imageName": "doubletherent.png"
+        "imageName": "doubletherent.png",
+        "value": 1
     },
     {
         "type": "action",
         "name": "Rent Brown & Light Blue",
         "effect": "Charge rent for Brown or Light Blue properties.",
-        "imageName": "rentbrownlightblue.png"
+        "imageName": "rentbrownlightblue.png",
+        "value": 1
     },
     {
         "type": "action",
         "name": "Rent Brown & Light Blue",
         "effect": "Charge rent for Brown or Light Blue properties.",
-        "imageName": "rentbrownlightblue.png"
+        "imageName": "rentbrownlightblue.png",
+        "value": 1
     },
     {
         "type": "action",
         "name": "Rent Dark Green & Dark Blue",
         "effect": "Charge rent for Dark Green or Dark Blue properties.",
-        "imageName": "rentdarkgreendarkblue.png"
+        "imageName": "rentdarkgreendarkblue.png",
+        "value": 1
     },
     {
         "type": "action",
         "name": "Rent Dark Green & Dark Blue",
         "effect": "Charge rent for Dark Green or Dark Blue properties.",
-        "imageName": "rentdarkgreendarkblue.png"
+        "imageName": "rentdarkgreendarkblue.png",
+        "value": 1
     },
     {
         "type": "action",
         "name": "Rent Pink & Orange",
         "effect": "Charge rent for Pink or Orange properties.",
-        "imageName": "rentpinkorange.png"
+        "imageName": "rentpinkorange.png",
+        "value": 1
     },
     {
         "type": "action",
         "name": "Rent Pink & Orange",
         "effect": "Charge rent for Pink or Orange properties.",
-        "imageName": "rentpinkorange.png"
+        "imageName": "rentpinkorange.png",
+        "value": 1
     },
     {
         "type": "action",
         "name": "Rent Red & Yellow",
         "effect": "Charge rent for Red or Yellow properties.",
-        "imageName": "rentredyellow.png"
+        "imageName": "rentredyellow.png",
+        "value": 1
     },
     {
         "type": "action",
         "name": "Rent Red & Yellow",
         "effect": "Charge rent for Red or Yellow properties.",
-        "imageName": "rentredyellow.png"
+        "imageName": "rentredyellow.png",
+        "value": 1
     },
     {
         "type": "action",
         "name": "Rent Black & Light Green",
         "effect": "Charge rent for Black or Light Green properties.",
-        "imageName": "rentblacklightgreen.png"
+        "imageName": "rentblacklightgreen.png",
+        "value": 1
     },
     {
         "type": "action",
         "name": "Rent Black & Light Green",
         "effect": "Charge rent for Black or Light Green properties.",
-        "imageName": "rentblacklightgreen.png"
+        "imageName": "rentblacklightgreen.png",
+        "value": 1
     },
     {
         "type": "action",
         "name": "Rent Wildcard",
         "effect": "Charge rent for any color of properties.",
-        "imageName": "rentwildcard.png"
+        "imageName": "rentwildcard.png",
+        "value": 3
     },
     {
         "type": "action",
         "name": "Rent Wildcard",
         "effect": "Charge rent for any color of properties.",
-        "imageName": "rentwildcard.png"
+        "imageName": "rentwildcard.png",
+        "value": 3
     },
     {
         "type": "action",
         "name": "Rent Wildcard",
         "effect": "Charge rent for any set of properties.",
-        "imageName": "rentwildcard.png"
+        "imageName": "rentwildcard.png",
+        "value": 3
     },
     {
         "type": "property",

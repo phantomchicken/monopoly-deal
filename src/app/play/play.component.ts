@@ -17,7 +17,23 @@ export class PlayComponent implements OnInit {
   public start = false;
   public players:Player[] = [];
   public deck:Card[] = [];
+  public discard:Card[] = [];
+  public currentPlayerIndex: number = 0;
+  public currentPlayer: Player | undefined;
+  public actions:number = 3;
+  
   ngOnInit(): void {
+    this.gameService.deck$.subscribe(deck => {
+      this.deck = deck;
+    });
+
+    this.gameService.discard$.subscribe(discard => {
+      this.discard = discard;
+    });
+
+    this.gameService.currentPlayer$.subscribe(player => {
+      this.currentPlayer = player;
+    });
   }
 
   setup(){
@@ -26,5 +42,23 @@ export class PlayComponent implements OnInit {
     this.start = true;
     this.deck = this.gameService.game.deck;
   }
+
+  playCard(player:Player, card:Card){
+    this.gameService.playCard(player, card);
+    this.actions--;
+    if (this.actions == 0){
+      this.endTurn();
+    }
+  }
+
+  endTurn(){
+    this.gameService.endTurn();
+  }
+
+  getBankTotal(player: Player): number {
+    return player.bank.reduce((sum, card) => sum + (card.value || 0), 0);
+  }
+
+  // getDiscardImageName(){}
 
 }
