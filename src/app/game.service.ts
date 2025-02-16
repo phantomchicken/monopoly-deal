@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Game } from './classes/game';
 import { of } from 'rxjs';
 import { Player } from './classes/player';
-import { Card } from './classes/card';
+import { Card, PropertyCard } from './classes/card';
 import { CardService } from 'src/app/card.service';
 import { BehaviorSubject, Observable } from 'rxjs';
 
@@ -65,7 +65,9 @@ export class GameService {
   playCard(player:Player,card:Card){
     switch(card.type){
       case 'property':
-        player.properties.push(card);
+        card = card as PropertyCard;
+        player.properties.push(card); // 🔹 Keep a flat list of all properties
+        //player.properties.sort((a, b) => a.currentColor.localeCompare(b.currentColor));
         player.hand.splice(player.hand.indexOf(card), 1);
         break;
       case 'money':
@@ -85,7 +87,7 @@ export class GameService {
   playActionCard(card:Card){
     switch(card.name){
       case 'Pass Go':
-        this.draw(this.game.players[this.game.turn], 2);
+        this.draw(this.game.players[this.playerIndex], 2);
         break;
  
     }

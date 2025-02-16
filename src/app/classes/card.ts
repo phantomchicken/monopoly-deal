@@ -3,6 +3,7 @@ export interface BaseCard {
     type: string;
     name: string;
     imageName: string;
+    value: number;
 }
 
 export interface ActionCard extends BaseCard {
@@ -12,12 +13,10 @@ export interface ActionCard extends BaseCard {
 
 export interface MoneyCard extends BaseCard {
     type: "money";
-    value: number;
 }
 
 export interface PropertyCard extends BaseCard {
     type: "property";
-    value: number;
     colors: string[];
     currentColor: string;
     setSize: number;
