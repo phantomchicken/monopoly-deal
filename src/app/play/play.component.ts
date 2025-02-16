@@ -57,6 +57,10 @@ export class PlayComponent implements OnInit {
       return
     }
     this.gameService.playCard(player, card);
+    this.decrementActions()
+  }
+
+  decrementActions() {
     this.actions--;
     if (this.actions == 0){
       this.endTurn();
@@ -118,6 +122,15 @@ export class PlayComponent implements OnInit {
   getBankTotal(player: Player): number {
     return player.bank.reduce((sum, card) => sum + (card.value || 0), 0);
   }
+
+  addToBank(player: Player, card: Card) {
+    if (card.type === 'action') {
+      player.bank.push(card);
+      player.hand = player.hand.filter(c => c !== card); 
+      this.decrementActions()
+    }
+  }
+  
 
 
 }

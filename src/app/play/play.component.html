@@ -40,7 +40,7 @@
     <!-- Game Board -->
     <div *ngIf="start" class="container-fluid">
         <!-- Other Players -->
-        <div class="row mb-4" *ngFor="let player of players; let i = index">
+        <div class="row mb-4" *ngFor="let player of players.slice(1); let i = index">
             <div class="col-12">
                 <div class="card">
                     <div class="card-body">
@@ -48,10 +48,19 @@
 
                         <!-- Hand -->
                         <div class="d-flex overflow-auto gap-2 mb-3">
-                            <img *ngFor="let card of player.hand" 
-                                [src]="'assets/' + card.imageName"
-                                [alt]="card.name" style="width: 100px; height: auto;"
-                                (click)="playCard(player, card)">
+                            <div *ngFor="let card of player.hand">
+                                <div class="card-container">
+                                    <!-- Display Card Image -->
+                                    <img [src]="'assets/' + card.imageName"
+                                         [alt]="card.name" style="width: 100px; height: auto;"
+                                         (click)="playCard(player, card)">
+                                    
+                                    <!-- Floating $ Circle for Action Cards -->
+                                    <div *ngIf="card.type === 'action'" class="floating-dollar" (click)="addToBank(player, card)">
+                                        $
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Properties (Now Selectable for Payment) -->
@@ -63,7 +72,7 @@
                                 (click)="selectCard(player, prop)">
                         </div>
 
-                        <!-- Bank (Now Selectable for Payment) -->
+                        <!-- Bank -->
                         <h6 class="card-title">(Money: {{ getBankTotal(player) }})</h6>
                         <div class="d-flex overflow-auto gap-2">
                             <img *ngFor="let prop of player.bank" 
@@ -97,13 +106,24 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-body">
-                        <h5 class="card-title">{{ players[0].name }}</h5>
-                        <!-- Hand -->
+                        <h5 class="card-title">{{ players[0].name }}</h5>                   
+                        <!-- Hand with Floating $ Circle -->
                         <div class="d-flex overflow-auto gap-2 mb-3">
-                            <img *ngFor="let card of players[0].hand" [src]="'assets/' + card.imageName"
-                                [alt]="card.name" style="width: 100px; height: auto;"
-                                (click)="playCard(players[0],card)">
+                            <div *ngFor="let card of players[0].hand">
+                                <div class="card-container">
+                                    <!-- Display Card Image -->
+                                    <img [src]="'assets/' + card.imageName"
+                                         [alt]="card.name" style="width: 100px; height: auto;"
+                                         (click)="playCard(players[0], card)">
+                                    
+                                    <!-- Floating $ Circle for Action Cards -->
+                                    <div *ngIf="card.type === 'action'" class="floating-dollar" (click)="addToBank(players[0], card)">
+                                        $
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+
                         <!-- Properties -->
                         <h6 class="card-title">(Properties:)</h6>
                         <div class="d-flex overflow-auto gap-2 mb-3">
@@ -111,6 +131,7 @@
                                 [alt]="prop.name" style="width: 100px; height: auto;"
                                 (click)="selectCard(players[0], prop)">
                         </div>
+
                         <!-- Bank -->
                         <h6 class="card-title">(Money: {{ getBankTotal(players[0]) }})</h6>
                         <div class="d-flex overflow-auto gap-2">
