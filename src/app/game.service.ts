@@ -96,17 +96,16 @@ export class GameService {
         break;
     }
     player.hand.splice(player.hand.indexOf(card), 1);
-    console.log(player);
   }
 
   playActionCard(card:Card){
+    let currentPlayer = this.game.players[this.playerIndex];
+    let otherPlayers = this.game.players.filter(p => p !== currentPlayer);
     switch(card.name){
       case 'Pass Go':
-        this.draw(this.game.players[this.playerIndex], 2);
+        this.draw(currentPlayer, 2);
         break;
       case "It's My Birthday":
-        let currentPlayer = this.game.players[this.playerIndex];
-        let otherPlayers = this.game.players.filter(p => p !== currentPlayer);
         otherPlayers.forEach(p => {
           this.paymentQueue.push({ from: p, to: currentPlayer, amount: 2 });
         });
@@ -114,7 +113,27 @@ export class GameService {
         this.paymentQueueSubject.next(this.paymentQueue); // ✅ Notify subscribers
         this.processNextPayment();
         break;
-      
+      case /Rent/.test(card.name) && card.name:
+        let name = card.name?.toLowerCase().replace("rent ", "");
+        let colors = name.split(" & ");
+
+        let properties1 = currentPlayer.properties.filter(p => colors.includes(p.colors[0]));
+        let properties2 = currentPlayer.properties.filter(p => colors.includes(p.colors[1]));
+
+        if (properties1.length == 0 && properties2.length == 0){
+          return
+        }
+
+        let pay1 = properties1[0]?.rentValues[properties1.length-1] || 0;
+        let pay2 = properties2[0]?.rentValues[properties2.length-1] || 0;
+        let pay =  pay1 >= pay2 ? pay1 : pay2;
+
+        otherPlayers.forEach(p => {
+          this.paymentQueue.push({ from: p, to: currentPlayer, amount: pay });
+        });
+
+        this.paymentQueueSubject.next(this.paymentQueue); // ✅ Notify subscribers
+        this.processNextPayment();
  
     }
   }

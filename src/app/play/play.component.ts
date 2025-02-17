@@ -112,6 +112,10 @@ export class PlayComponent implements OnInit {
   }
 
   addToBank(player: Player, card: Card) {
+    if (player.id != this.currentPlayer?.id) {
+      console.log("not your turn");
+      return
+    }
     if (card.type === 'action') {
       player.bank.push(card);
       player.hand = player.hand.filter(c => c !== card); 
