@@ -93,6 +93,7 @@ export class GameService {
     if (player.hand.length == 0){
       this.draw(player, 5);
     }
+    this.statusMessageSubject.next(null); // reset tooltip
     
     this.playerIndex = (this.playerIndex + 1) % this.game.players.length;
     const nextPlayer = this.game.players[this.playerIndex];
@@ -144,10 +145,25 @@ export class GameService {
             return; // No matching properties to pay rent
         }
 
-        // Find the highest rent value from the owned properties
-        let maxRent = Math.max(
-            ...ownedProperties.map(p => Math.max(...p.rentValues)) // Find the max rent value from rent values of each property
-        );
+        // hashmap
+        let rentMap = new Map<string, number>();
+        let maxRent = 0;
+        for (let i = 0; i < ownedProperties.length; i++) {
+          let property = ownedProperties[i];
+          
+          // Increase count for the property color
+          let color = property.colors[0]; // Assuming each property only belongs to one color
+          let currentCount = rentMap.get(color) || 0;
+          rentMap.set(color, currentCount + 1);
+  
+          // Calculate rent based on the count of owned properties for this color
+          let rentValue = property.rentValues[currentCount]; // Get the correct rent value based on how many properties the player owns
+  
+          // Update the max rent value
+          if (rentValue > maxRent) {
+              maxRent = rentValue;
+          }
+        }
 
         // Make the other players pay the highest rent value
         otherPlayers.forEach(p => {
@@ -167,12 +183,17 @@ export class GameService {
         this.isForcedDealActiveSubject.next(false);
         this.statusMessageSubject.next('Select a property to steal from another player');
         break;
-
       case 'Forced Deal':
         if (currentPlayer.properties.length == 0) break;
         this.isPropertySelectableSubject.next(true);
         this.isForcedDealActiveSubject.next(true);
         this.statusMessageSubject.next('Select a property to steal from another player');
+        break;
+      case 'Deal Breaker':
+        if (otherPlayers.every(p => p.properties.length == 0)) break;
+        this.isPropertySelectableSubject.next(true);
+        this.isForcedDealActiveSubject.next(false);
+        this.statusMessageSubject.next('Select a set to steal from another player');
         break;
     }
   }
@@ -277,6 +298,7 @@ export class GameService {
   processNextPayment() {
     if (this.paymentQueue.length) {
         let { from, to, amount } = this.paymentQueue[0];
+        if (this.getTotalPayableAmount(from)) return;
         this.statusMessageSubject.next(`${from.name}, select a card to pay ${amount} to ${to.name}.`);
     } else {
         this.statusMessageSubject.next(null);
@@ -289,7 +311,7 @@ export class GameService {
     return bankTotal + propertyTotal;
   }
   
-  selectTargetProperty(player: Player, property: PropertyCard) {
+  selectTargetProperty(player: Player, property: PropertyCard, isDealbreaker: boolean = false) {
     if (!this.isPropertySelectableSubject.value) return;
 
     const currentPlayer = this.game.players[this.playerIndex];
@@ -298,7 +320,13 @@ export class GameService {
     this.selectedTargetPlayerSubject.next(player);
     this.selectedPropertySubject.next(property);
 
-    if (this.isForcedDealActiveSubject.value) {
+    if (this.statusMessageSubject.value?.includes("set")) {
+      let color = property.colors[0];
+      player.properties.filter((p) => p.colors[0] == color).forEach((p) => {
+        this.executePropertySteal(player, currentPlayer, p);
+      })
+    }  
+    else if (this.isForcedDealActiveSubject.value) {
       this.statusMessageSubject.next('Select one of your properties to swap');
     } else {
       // For Sly Deal, execute the steal immediately
