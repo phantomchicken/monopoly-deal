@@ -801,22 +801,6 @@
         "imageName": "pennsylvaniarailroad.png"
     },
     {
-        "type": "property",
-        "name": "Wild Card (Purple/Orange)",
-        "colors": [
-            "purple",
-            "orange"
-        ],
-        "value": 3,
-        "setSize": 3,
-        "rentValues": [
-            2,
-            4,
-            6
-        ],
-        "imageName": "default.png"
-    },
-    {
         "type": "money",
         "name": "$1M",
         "value": 1,

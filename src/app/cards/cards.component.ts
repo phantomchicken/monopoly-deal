@@ -14,7 +14,7 @@ export class CardsComponent implements OnInit {
   public cards: Card[] = [];
   ngOnInit(): void {
     this.cardService.getCards().subscribe(cards => {
-      this.cards = this.shuffle(cards);
+      this.cards = cards; //this.shuffle(cards);
     });
   }
 

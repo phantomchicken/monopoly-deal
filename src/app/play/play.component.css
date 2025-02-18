@@ -28,3 +28,24 @@
     background-color: #ff9900;
   }
   
+  .clickable-name {
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+  }
+  
+  .clickable-name.hovered:hover {
+    background-color: #e9ecef;
+    color: #0056b3;
+  }
+  
+  .clickable-name.hovered.selected {
+    background-color: #007bff;
+    color: white;
+  }
+  
+  /* Disable clicking when not selectable */
+  .clickable-name:not(.hovered) {
+    cursor: default;
+  }

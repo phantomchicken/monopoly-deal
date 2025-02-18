@@ -45,13 +45,21 @@ export class GameService {
   private paymentQueueSubject = new BehaviorSubject<{ from: Player, to: Player, amount: number }[]>([]);
   paymentQueue$ = this.paymentQueueSubject.asObservable();
 
+  private isDebtCollectorSelectableSubject = new BehaviorSubject<boolean>(false);
+  isDebtCollectorSelectable$ = this.isDebtCollectorSelectableSubject.asObservable();
+
+  private selectedDebtPlayerSubject = new BehaviorSubject<Player | null>(null);
+  selectedDebtPlayer$ = this.selectedDebtPlayerSubject.asObservable();
+
 
   setup (name:string, numberOfPlayers:number){
-    this.playerNames.unshift(name);
+    if (this.game.players.length == 0) { // for easy drawing TODO replace
+      this.playerNames.unshift(name);
 
-    for (let i=0; i<numberOfPlayers; i++){
-      let playerName = this.playerNames[i];
-      this.game.players.push(new Player(i+1, playerName));
+      for (let i=0; i<numberOfPlayers; i++){
+        let playerName = this.playerNames[i];
+        this.game.players.push(new Player(i+1, playerName));
+      }
     }
 
     // ✅ Fetch cards from API using Observable instead of Promise
@@ -115,31 +123,52 @@ export class GameService {
         break;
       case /Rent/.test(card.name) && card.name:
         let name = card.name?.toLowerCase().replace("rent ", "");
-        let colors = name.split(" & ");
+        let colors = name == "wildcard" ? ["red", "orange", "dark green", "light green", "black", "dark blue", "light blue", "yellow", "pink", "brown"] : name.split(" & ");
 
-        let properties1 = currentPlayer.properties.filter(p => colors.includes(p.colors[0]));
-        let properties2 = currentPlayer.properties.filter(p => colors.includes(p.colors[1]));
+        // Filter properties based on the colors from the Rent wildcard card
+        let ownedProperties = currentPlayer.properties.filter(p => colors.some(color => p.colors.includes(color)));
 
-        if (properties1.length == 0 && properties2.length == 0){
-          return
+        if (ownedProperties.length === 0) {
+            return; // No matching properties to pay rent
         }
 
-        let pay1 = properties1[0]?.rentValues[properties1.length-1] || 0;
-        let pay2 = properties2[0]?.rentValues[properties2.length-1] || 0;
-        let pay =  pay1 >= pay2 ? pay1 : pay2;
+        // Find the highest rent value from the owned properties
+        let maxRent = Math.max(
+            ...ownedProperties.map(p => Math.max(...p.rentValues)) // Find the max rent value from rent values of each property
+        );
 
+        // Make the other players pay the highest rent value
         otherPlayers.forEach(p => {
-          this.paymentQueue.push({ from: p, to: currentPlayer, amount: pay });
+            this.paymentQueue.push({ from: p, to: currentPlayer, amount: maxRent });
         });
 
         this.paymentQueueSubject.next(this.paymentQueue); // ✅ Notify subscribers
         this.processNextPayment();
- 
+        break;
+      case 'Debt Collector':
+        this.isDebtCollectorSelectableSubject.next(true);
+        this.statusMessageSubject.next('Choose a player to pay you 5M.');
+        break;
     }
   }
 
-  delay(ms: number) {
-    return new Promise( resolve => setTimeout(resolve, ms) );
+
+  selectDebtCollector(player: Player) {
+    const currentPlayer = this.game.players[this.playerIndex];
+    
+    if (!this.isDebtCollectorSelectableSubject.value || player === currentPlayer) {
+      return;
+    }
+
+    this.selectedDebtPlayerSubject.next(player);
+    this.initiateDebtCollection(player, currentPlayer);
+    this.isDebtCollectorSelectableSubject.next(false);
+  }
+
+  private initiateDebtCollection(from: Player, to: Player) {
+    this.paymentQueue.push({ from, to, amount: 5 });
+    this.paymentQueueSubject.next(this.paymentQueue);
+    this.processNextPayment();
   }
 
   draw(player: Player, numberOfCards: number){

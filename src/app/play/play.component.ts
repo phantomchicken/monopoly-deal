@@ -29,6 +29,9 @@ export class PlayComponent implements OnInit {
   statusMessage: string | undefined | null;
   decisionState: 'playing' | 'paying' | null = null;
   selectedCard: Card | null = null;
+
+  isDebtCollectorSelectable = false;
+  selectedDebtPlayer: Player | null = null;
   
   ngOnInit(): void {
     this.gameService.deck$.subscribe(deck => {
@@ -54,9 +57,16 @@ export class PlayComponent implements OnInit {
       }
     });
 
-
     this.gameService.statusMessage$.subscribe(msg => {
         this.statusMessage = msg;
+    });
+
+    this.gameService.isDebtCollectorSelectable$.subscribe(isSelectable => {
+      this.isDebtCollectorSelectable = isSelectable;
+    });
+
+    this.gameService.selectedDebtPlayer$.subscribe(player => {
+      this.selectedDebtPlayer = player;
     });
 
   
@@ -121,6 +131,10 @@ export class PlayComponent implements OnInit {
       player.hand = player.hand.filter(c => c !== card); 
       this.decrementActions()
     }
+  }
+
+  selectDebtCollector(player: Player) {
+    this.gameService.selectDebtCollector(player);
   }
 
 }
