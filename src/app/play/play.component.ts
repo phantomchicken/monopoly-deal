@@ -32,6 +32,10 @@ export class PlayComponent implements OnInit {
 
   isDebtCollectorSelectable = false;
   selectedDebtPlayer: Player | null = null;
+
+  isPropertySelectable = false;
+  isForcedDealActive = false;
+  selectedProperty: PropertyCard | null = null;
   
   ngOnInit(): void {
     this.gameService.deck$.subscribe(deck => {
@@ -69,6 +73,17 @@ export class PlayComponent implements OnInit {
       this.selectedDebtPlayer = player;
     });
 
+    this.gameService.propertySelectable$.subscribe(isSelectable => {
+      this.isPropertySelectable = isSelectable;
+    });
+
+    this.gameService.forcedDealActive$.subscribe(isActive => {
+      this.isForcedDealActive = isActive;
+    });
+
+    this.gameService.selectedProperty$.subscribe(property => {
+      this.selectedProperty = property;
+    });
   
   }
 
@@ -102,8 +117,22 @@ export class PlayComponent implements OnInit {
   }
   
   selectCard(player: Player, card: Card) {
-    this.gameService.selectCardForPayment(player, card);
-}
+    // If we're in payment mode
+    if (this.decisionState === 'paying') {
+      this.gameService.selectCardForPayment(player, card);
+    }
+    // If we're selecting property for Forced Deal
+    else if (this.isPropertySelectable && card.type === 'property') {
+      // If selecting target property
+      if (!this.selectedProperty) {
+        this.gameService.selectTargetProperty(player, card as PropertyCard);
+      }
+      // If selecting own property for swap
+      else if (this.isForcedDealActive && player === this.currentPlayer) {
+        this.gameService.selectOwnProperty(card as PropertyCard);
+      }
+    }
+  }
 
   // Helper function to get the total available money/property a player can pay
   getTotalPayableAmount(player: Player): number {
@@ -135,6 +164,14 @@ export class PlayComponent implements OnInit {
 
   selectDebtCollector(player: Player) {
     this.gameService.selectDebtCollector(player);
+  }
+
+  selectTargetProperty(player: Player, property: PropertyCard) {
+    this.gameService.selectTargetProperty(player, property);
+  }
+
+  selectOwnProperty(property: PropertyCard) {
+    this.gameService.selectOwnProperty(property);
   }
 
 }

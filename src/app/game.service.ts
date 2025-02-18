@@ -51,6 +51,18 @@ export class GameService {
   private selectedDebtPlayerSubject = new BehaviorSubject<Player | null>(null);
   selectedDebtPlayer$ = this.selectedDebtPlayerSubject.asObservable();
 
+  private isPropertySelectableSubject = new BehaviorSubject<boolean>(false);
+  propertySelectable$ = this.isPropertySelectableSubject.asObservable();
+
+  private isForcedDealActiveSubject = new BehaviorSubject<boolean>(false);
+  forcedDealActive$ = this.isForcedDealActiveSubject.asObservable();
+
+  private selectedPropertySubject = new BehaviorSubject<PropertyCard | null>(null);
+  selectedProperty$ = this.selectedPropertySubject.asObservable();
+
+  private selectedTargetPlayerSubject = new BehaviorSubject<Player | null>(null);
+  selectedTargetPlayer$ = this.selectedTargetPlayerSubject.asObservable();
+
 
   setup (name:string, numberOfPlayers:number){
     if (this.game.players.length == 0) { // for easy drawing TODO replace
@@ -149,6 +161,19 @@ export class GameService {
         this.isDebtCollectorSelectableSubject.next(true);
         this.statusMessageSubject.next('Choose a player to pay you 5M.');
         break;
+      case 'Sly Deal':
+        if (otherPlayers.every(p => p.properties.length == 0)) break;
+        this.isPropertySelectableSubject.next(true);
+        this.isForcedDealActiveSubject.next(false);
+        this.statusMessageSubject.next('Select a property to steal from another player');
+        break;
+
+      case 'Forced Deal':
+        if (currentPlayer.properties.length == 0) break;
+        this.isPropertySelectableSubject.next(true);
+        this.isForcedDealActiveSubject.next(true);
+        this.statusMessageSubject.next('Select a property to steal from another player');
+        break;
     }
   }
 
@@ -241,12 +266,11 @@ export class GameService {
         this.paymentQueue.shift(); // Remove completed payment
         this.paymentQueueSubject.next(this.paymentQueue); // ✅ Emit changes
         this.processNextPayment();
-        return `Payment complete! ${to.name} received the payment.`;
       } else {
         this.statusMessageSubject.next(`${from.name}, continue selecting cards to cover ${this.paymentQueue[0].amount}.`);
-        return `${from.name}, continue selecting cards to cover ${this.paymentQueue[0].amount}.`;
       }
     }
+    this.resetPropertySelection(); // so forced and sly deal still work
     return
   }
 
@@ -265,5 +289,66 @@ export class GameService {
     return bankTotal + propertyTotal;
   }
   
+  selectTargetProperty(player: Player, property: PropertyCard) {
+    if (!this.isPropertySelectableSubject.value) return;
+
+    const currentPlayer = this.game.players[this.playerIndex];
+    if (player === currentPlayer) return;
+
+    this.selectedTargetPlayerSubject.next(player);
+    this.selectedPropertySubject.next(property);
+
+    if (this.isForcedDealActiveSubject.value) {
+      this.statusMessageSubject.next('Select one of your properties to swap');
+    } else {
+      // For Sly Deal, execute the steal immediately
+      this.executePropertySteal(player, currentPlayer, property);
+    }
+  }
+
+  selectOwnProperty(property: PropertyCard) {
+    if (!this.isForcedDealActiveSubject.value || !this.selectedPropertySubject.value) return;
+    
+    const currentPlayer = this.game.players[this.playerIndex];
+    const targetPlayer = this.selectedTargetPlayerSubject.value;
+    const targetProperty = this.selectedPropertySubject.value;
+
+    if (targetPlayer && targetProperty) {
+      // Execute the swap
+      this.executePropertySwap(currentPlayer, targetPlayer, property, targetProperty);
+      
+      // Reset all selection states
+      this.resetPropertySelection();
+    }
+  }
+
+  private executePropertySteal(from: Player, to: Player, property: PropertyCard) {
+    from.properties = from.properties.filter(p => p !== property);
+    to.properties.push(property);
+    this.statusMessageSubject.next(`${to.name} stole ${property.name} from ${from.name}`);
+    this.resetPropertySelection();
+  }
+
+  private executePropertySwap(player1: Player, player2: Player, prop1: PropertyCard, prop2: PropertyCard) {
+    // Remove properties from current owners
+    player1.properties = player1.properties.filter(p => p !== prop1);
+    player2.properties = player2.properties.filter(p => p !== prop2);
+    
+    // Add to new owners
+    player1.properties.push(prop2);
+    player2.properties.push(prop1);
+
+    // Update status message
+    this.statusMessageSubject.next(
+      `${player1.name} swapped their ${prop1.name} for ${player2.name}'s ${prop2.name}`
+    );
+  }
+
+  private resetPropertySelection() {
+    this.isPropertySelectableSubject.next(false);
+    this.isForcedDealActiveSubject.next(false);
+    this.selectedPropertySubject.next(null);
+    this.selectedTargetPlayerSubject.next(null);
+  }
 
 }

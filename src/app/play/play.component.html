@@ -2,26 +2,13 @@
     <!-- Setup Form -->
     <div class="row mb-4">
         <div class="col-md-6 mx-auto">
-            <form (ngSubmit)="setup()" class="d-flex gap-2">
+            <form (ngSubmit)="setup()" class="d-flex gap-2 mb-2">
                 <input type="text" class="form-control" name="name" [(ngModel)]="name" placeholder="Name">
                 <input type="number" class="form-control" name="numberOfPlayers" [(ngModel)]="numberOfPlayers" min="2"
                     max="5" placeholder="Players">
                 <button type="submit" class="btn btn-primary">Start</button>
             </form>
-            <form (ngSubmit)="pay()" class="d-flex gap-2">
-                <select class="form-control" name="name" [(ngModel)]="from" placeholder="Name">
-                    <option *ngFor="let player of players" [ngValue]="player">
-                        {{ player.name }}
-                    </option>
-                </select>
-                <select class="form-control" name="name" [(ngModel)]="to" placeholder="Name">
-                    <option *ngFor="let player of players" [ngValue]="player">
-                        {{ player.name }}
-                    </option>
-                </select>
-                <input type="number" class="form-control" name="amount" [(ngModel)]="amount" min="1" placeholder="2">
-                <button type="submit" class="btn btn-primary">Pay</button>
-            </form>
+
             <div *ngIf="statusMessage" class="alert alert-info">
                 {{ statusMessage }}
             </div>
