@@ -1,0 +1,13 @@
+[
+    { "color": "brown", "setSize": 2 },
+    { "color": "light blue", "setSize": 3 },
+    { "color": "pink", "setSize": 3 },
+    { "color": "orange", "setSize": 3 },
+    { "color": "red", "setSize": 3 },
+    { "color": "yellow", "setSize": 3 },
+    { "color": "dark green", "setSize": 3 },
+    { "color": "dark blue", "setSize": 2 },
+    { "color": "black", "setSize": 4 },
+    { "color": "light green", "setSize": 2 }
+]
+  

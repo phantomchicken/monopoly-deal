@@ -18,13 +18,14 @@ export class GameService {
   public playerIndex: number = 0;
   public currentPlayer: Player | undefined;
   public actions:number = 3;
+  public propertySetSizes = require('../assets/sets.json');
 
   statusMessage: string | null | undefined = null;
   decisionState: 'playing' | 'paying' | null = null;
   selectedCard: Card | null = null;
   paymentState: { from: Player, to: Player, amount: number } | null = null;
   paymentQueue: { from: Player, to: Player, amount: number }[] = [];
-
+  propertySetSizeMap: Map<string, number> = new Map<string, number>();
 
   // ✅ BehaviorSubject holds and emits deck state changes
   private deckSubject = new BehaviorSubject<Card[]>([]);
@@ -72,6 +73,10 @@ export class GameService {
         let playerName = this.playerNames[i];
         this.game.players.push(new Player(i+1, playerName));
       }
+
+      this.propertySetSizeMap = new Map(
+        this.propertySetSizes.map((p: { color: any; setSize: any; }) => [p.color, p.setSize])
+      );
     }
 
     // ✅ Fetch cards from API using Observable instead of Promise
@@ -116,8 +121,25 @@ export class GameService {
         this.discardSubject.next(this.game.discard);
         break;
     }
+    if (this.hasThreeFullSets(player)){
+      this.statusMessageSubject.next(player.name + ' has three full sets and has won the game!');
+    }
     player.hand.splice(player.hand.indexOf(card), 1);
   }
+  
+  hasThreeFullSets(player: Player): boolean {
+    let sets = 0;
+  
+    this.propertySetSizeMap.forEach((setSize, color) => {
+      const count = player.properties.filter(p => p.colors.includes(color)).length;
+      if (count >= setSize) {
+        sets++;
+      }
+    });
+  
+    return sets >= 3;
+  }
+  
 
   playActionCard(card:Card){
     let currentPlayer = this.game.players[this.playerIndex];
@@ -298,7 +320,7 @@ export class GameService {
   processNextPayment() {
     if (this.paymentQueue.length) {
         let { from, to, amount } = this.paymentQueue[0];
-        if (this.getTotalPayableAmount(from)) return;
+        if (this.getTotalPayableAmount(from) == 0) return;
         this.statusMessageSubject.next(`${from.name}, select a card to pay ${amount} to ${to.name}.`);
     } else {
         this.statusMessageSubject.next(null);
