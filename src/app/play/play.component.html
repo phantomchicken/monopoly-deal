@@ -6,7 +6,7 @@
                 <input type="text" class="form-control" name="name" [(ngModel)]="name" placeholder="Name">
                 <input type="number" class="form-control" name="numberOfPlayers" [(ngModel)]="numberOfPlayers" min="2"
                     max="5" placeholder="Players">
-                <button type="submit" class="btn btn-primary">Start</button>
+                <button type="submit" class="btn btn-success w-25">Start</button>
             </form>
 
             <div *ngIf="statusMessage" class="alert alert-info">
@@ -15,14 +15,6 @@
         </div>
     </div>
 
-    <div class="row mb-4 align-items-center justify-content-center">
-        <div class="col-md-6 text-center">
-            <h2>
-                Current Player: {{ currentPlayer?.name || "Waiting..." }}
-            </h2>
-            <button class="btn btn-danger w-25 p-3 mt-2" (click)="endTurn()">Pass</button>
-        </div>
-    </div>
 
     <!-- Game Board -->
     <div *ngIf="start" class="container-fluid">
@@ -58,7 +50,7 @@
                         <!-- Properties (Now Selectable for Payment) -->
                         <h6 class="card-title">(Properties:)</h6>
                         <div class="d-flex overflow-auto gap-2 mb-3">
-                            <img *ngFor="let prop of player.properties" [src]="'assets/' + prop.imageName"
+                            <img *ngFor="let prop of sortProperties(player)" [src]="'assets/' + prop.imageName"
                                 [alt]="prop.name" style="width: 100px; height: auto;"
                                 (click)="selectCard(player, prop)">
                         </div>
@@ -122,7 +114,7 @@
                         <!-- Properties -->
                         <h6 class="card-title">(Properties:)</h6>
                         <div class="d-flex overflow-auto gap-2 mb-3">
-                            <img *ngFor="let prop of players[0].properties" [src]="'assets/' + prop.imageName"
+                            <img *ngFor="let prop of sortProperties(players[0])" [src]="'assets/' + prop.imageName"
                                 [alt]="prop.name" style="width: 100px; height: auto;"
                                 (click)="selectCard(players[0], prop)">
                         </div>
@@ -138,5 +130,21 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Floating Current Player Display -->
+    <div class="floating-card position-fixed bottom-0 start-50 translate-middle-x mb-5 text-center bg-white bg-rounded">
+        <h4>Current Player: {{ currentPlayer?.name || "Waiting..." }}</h4>
+    </div>
+  
+
+    <!-- Floating Pass Button & Current Actions -->
+    <div class="floating-card position-fixed bottom-0 end-0 m-3 mb-5 me-5 text-end">
+        <div class="mb-2">
+        <strong>Current Actions:</strong> {{ actions }}
+        </div>
+        <button tabindex=0 class="btn btn-danger btn-lg px-5" (click)="endTurn()">
+        Pass
+        </button>
     </div>
 </div>

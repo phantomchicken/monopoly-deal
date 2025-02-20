@@ -134,6 +134,10 @@ export class PlayComponent implements OnInit {
     }
   }
 
+  sortProperties(player:Player){
+    return player.properties.sort((a, b) => a.colors[0].localeCompare(b.colors[0]));
+  }
+
   // Helper function to get the total available money/property a player can pay
   getTotalPayableAmount(player: Player): number {
     let bankTotal = player.bank.reduce((sum, card) => sum + (card.value || 0), 0);

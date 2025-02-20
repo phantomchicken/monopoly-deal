@@ -26,6 +26,7 @@ export class GameService {
   paymentState: { from: Player, to: Player, amount: number } | null = null;
   paymentQueue: { from: Player, to: Player, amount: number }[] = [];
   propertySetSizeMap: Map<string, number> = new Map<string, number>();
+  isDoubleTheRent: boolean = false;
 
   // ✅ BehaviorSubject holds and emits deck state changes
   private deckSubject = new BehaviorSubject<Card[]>([]);
@@ -156,6 +157,10 @@ export class GameService {
         this.paymentQueueSubject.next(this.paymentQueue); // ✅ Notify subscribers
         this.processNextPayment();
         break;
+      case 'Double The Rent':
+          this.isDoubleTheRent = true;
+          this.statusMessageSubject.next(currentPlayer.name + ' is doubling their next rent card.')
+          break;
       case /Rent/.test(card.name) && card.name:
         let name = card.name?.toLowerCase().replace("rent ", "");
         let colors = name == "wildcard" ? ["red", "orange", "dark green", "light green", "black", "dark blue", "light blue", "yellow", "pink", "brown"] : name.split(" & ");
@@ -185,6 +190,10 @@ export class GameService {
           if (rentValue > maxRent) {
               maxRent = rentValue;
           }
+        }
+
+        if (this.isDoubleTheRent){
+          maxRent *= 2;
         }
 
         // Make the other players pay the highest rent value
@@ -272,6 +281,7 @@ export class GameService {
 
     this.currentPlayerSubject.next(nextPlayer); // Notify subscribers
     this.actions = 3; // Reset actions
+    this.isDoubleTheRent = false;
   }
 
   pay(from: Player, to: Player, amount: number) {
@@ -342,12 +352,15 @@ export class GameService {
     this.selectedTargetPlayerSubject.next(player);
     this.selectedPropertySubject.next(property);
 
-    if (this.statusMessageSubject.value?.includes("set")) {
+    if (this.statusMessageSubject.value?.includes("set")) { // dealbreaker
       let color = property.colors[0];
       player.properties.filter((p) => p.colors[0] == color).forEach((p) => {
         this.executePropertySteal(player, currentPlayer, p);
       })
-    }  
+    }  else  if (player.properties.filter(p => p.colors[0] == property.colors[0]).length == property.setSize){ // if property is part of a set cannot steal unless dealbreaker
+      this.statusMessageSubject.next ("Cannot steal from a set!");
+      return
+    }
     else if (this.isForcedDealActiveSubject.value) {
       this.statusMessageSubject.next('Select one of your properties to swap');
     } else {

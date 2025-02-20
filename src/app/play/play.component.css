@@ -49,3 +49,12 @@
   .clickable-name:not(.hovered) {
     cursor: default;
   }
+
+  .floating-card {
+    position: fixed;
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 16px 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+  }
