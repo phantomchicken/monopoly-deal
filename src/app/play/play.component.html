@@ -4,139 +4,87 @@
         <div class="col-md-6 mx-auto">
             <form (ngSubmit)="setup()" class="d-flex gap-2 mb-2">
                 <input type="text" class="form-control" name="name" [(ngModel)]="name" placeholder="Name">
-                <input type="number" class="form-control" name="numberOfPlayers" [(ngModel)]="numberOfPlayers" min="2"
-                    max="5" placeholder="Players">
+                <input type="number" class="form-control" name="numberOfPlayers" [(ngModel)]="numberOfPlayers" min="2" max="5" placeholder="Players">
                 <button type="submit" class="btn btn-success w-25">Start</button>
             </form>
 
-            <div *ngIf="statusMessage" class="alert alert-info">
+            <div *ngIf="statusMessage" class="alert alert-info floating-card position-fixed bottom-0 start-50 translate-middle-x mb-5 text-center bg-white bg-rounded" >
                 {{ statusMessage }}
             </div>
         </div>
     </div>
 
+    <!-- Deck Area -->
+    <div class="row justify-content-center mb-4">
+        <div class="col-auto">
+            <div class="d-flex gap-4 align-items-center">
+                <div class="text-center">
+                    <img [src]="'assets/deck.jpg'" alt="deck" class="card-img">
+                    <div class="mt-2">Draw ({{ deck.length }})</div>
+                </div>
+                <div class="text-center">
+                    <img *ngIf="discard.length" src="assets/{{discard[discard.length-1].imageName}}" alt="Discard Pile" class="card-img">
+                    <div class="mt-2">Discard ({{ discard.length }})</div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Game Board -->
     <div *ngIf="start" class="container-fluid">
-        <!-- Other Players -->
-        <div class="row mb-4" *ngFor="let player of players.slice(1); let i = index">
+        <!-- Players -->
+        <div class="row mb-4" *ngFor="let player of players; let i = index">
             <div class="col-12">
                 <div class="card">
                     <div class="card-body">
                         <h5 class="card-title">
-                            <span (click)="selectDebtCollector(player)" class="clickable-name"
-                                [ngClass]="{ 'hovered': isDebtCollectorSelectable }">
+                            <span (click)="selectDebtCollector(player)" class="clickable-name" [ngClass]="{ 'hovered': isDebtCollectorSelectable }">
                                 {{ player.name }}
                             </span>
                         </h5>
 
                         <!-- Hand -->
-                        <div class="d-flex overflow-auto gap-2 mb-3">
-                            <div *ngFor="let card of player.hand">
-                                <div class="card-container">
-                                    <!-- Display Card Image -->
-                                    <img [src]="'assets/' + card.imageName" [alt]="card.name"
-                                        style="width: 100px; height: auto;" (click)="playCard(player, card)">
-
-                                    <!-- Floating $ Circle for Action Cards -->
-                                    <div *ngIf="card.type === 'action'" class="floating-dollar"
-                                        (click)="addToBank(player, card)">
-                                        $
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <h6 class="card-title">Hand:</h6>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <div *ngFor="let card of player.hand">
+                                        <div class="card-container">
+                                            <img [src]="player==currentPlayer ? 'assets/' + card.imageName : 'assets/facedown.jpg'" [alt]="card.name" class="card-img" (click)="playCard(player, card)">
+                                            <div *ngIf="card.type === 'action' && player == currentPlayer" class="floating-dollar" (click)="addToBank(player, card)">$
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- Properties (Now Selectable for Payment) -->
-                        <h6 class="card-title">(Properties:)</h6>
-                        <div class="d-flex overflow-auto gap-2 mb-3">
-                            <img *ngFor="let prop of sortProperties(player)" [src]="'assets/' + prop.imageName"
-                                [alt]="prop.name" style="width: 100px; height: auto;"
-                                (click)="selectCard(player, prop)">
-                        </div>
+                            <!-- Properties -->
+                            <div class="col-4">
+                                <h6 class="card-title">Properties:</h6>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <img *ngFor="let prop of sortProperties(player)" [src]="'assets/' + prop.imageName" [alt]="prop.name" class="card-img" (click)="selectCard(player, prop)">
+                                </div>
+                            </div>
 
-                        <!-- Bank -->
-                        <h6 class="card-title">(Money: {{ getBankTotal(player) }})</h6>
-                        <div class="d-flex overflow-auto gap-2">
-                            <img *ngFor="let prop of player.bank" [src]="'assets/' + prop.imageName" [alt]="prop.name"
-                                style="width: 100px; height: auto;" (click)="selectCard(player, prop)">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Deck Area -->
-        <div class="row justify-content-center mb-4">
-            <div class="col-auto">
-                <div class="d-flex gap-4 align-items-center">
-                    <div class="text-center">
-                        <img [src]="'assets/deck.jpg'" alt="deck" style="width: 100px; height: auto;">
-                        <div class="mt-2">Draw ({{ deck.length }})</div>
-                    </div>
-                    <div class="text-center">
-                        <img *ngIf="discard.length" src="assets/{{discard[discard.length-1].imageName}}"
-                            alt="Discard Pile" style="width: 100px; height: auto;">
-                        <div class="mt-2">Discard ({{ discard.length }})</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Player 1 -->
-        <div class="row mb-4" *ngIf="players.length > 0">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">
-                            <span (click)="selectDebtCollector(players[0])" class="clickable-name"
-                                [ngClass]="{ 'hovered': isDebtCollectorSelectable }">
-                                {{ players[0].name }}
-                            </span>
-                        </h5>
-                        <!-- Hand with Floating $ Circle -->
-                        <div class="d-flex overflow-auto gap-2 mb-3">
-                            <div *ngFor="let card of players[0].hand">
-                                <div class="card-container">
-                                    <!-- Display Card Image -->
-                                    <img [src]="'assets/' + card.imageName" [alt]="card.name"
-                                        style="width: 100px; height: auto;" (click)="playCard(players[0], card)">
-
-                                    <!-- Floating $ Circle for Action Cards -->
-                                    <div *ngIf="card.type === 'action'" class="floating-dollar"
-                                        (click)="addToBank(players[0], card)">
-                                        $
-                                    </div>
+                            <!-- Bank -->
+                            <div class="col-2">
+                                <h6 class="card-title">Money: {{ getBankTotal(player) }}</h6>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <img *ngFor="let prop of player.bank" [src]="'assets/' + prop.imageName" [alt]="prop.name" class="card-img" (click)="selectCard(player, prop)">
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Properties -->
-                        <h6 class="card-title">(Properties:)</h6>
-                        <div class="d-flex overflow-auto gap-2 mb-3">
-                            <img *ngFor="let prop of sortProperties(players[0])" [src]="'assets/' + prop.imageName"
-                                [alt]="prop.name" style="width: 100px; height: auto;"
-                                (click)="selectCard(players[0], prop)">
-                        </div>
-
-                        <!-- Bank -->
-                        <h6 class="card-title">(Money: {{ getBankTotal(players[0]) }})</h6>
-                        <div class="d-flex overflow-auto gap-2">
-                            <img *ngFor="let prop of players[0].bank" [src]="'assets/' + prop.imageName"
-                                [alt]="prop.name" style="width: 100px; height: auto;"
-                                (click)="selectCard(players[0], prop)">
-                        </div>
                     </div>
                 </div>
             </div>
         </div>
+
     </div>
 
     <!-- Floating Current Player Display -->
-    <div class="floating-card position-fixed bottom-0 start-50 translate-middle-x mb-5 text-center bg-white bg-rounded">
+    <div *ngIf="currentPlayer" class="floating-card position-fixed bottom-0 start-25 mb-5 text-center bg-white bg-rounded">
         <h4>Current Player: {{ currentPlayer?.name || "Waiting..." }}</h4>
     </div>
-  
 
     <!-- Floating Pass Button & Current Actions -->
     <div class="floating-card position-fixed bottom-0 end-0 m-3 mb-5 me-5 text-end">

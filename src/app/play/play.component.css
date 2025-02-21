@@ -1,60 +1,81 @@
-/* Container for the card (wraps the image and floating circle) */
-.card-container {
-    position: relative;
-    display: inline-block;
-  }
-  
-  /* Floating $ circle style */
-  .floating-dollar {
-    position: absolute;
-    top: 5px;
-    left: 5px;
-    background-color: #ffcc00;
-    color: white;
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 20px;
-    font-weight: bold;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  }
-  
-  /* Optional: Add hover effect */
-  .floating-dollar:hover {
-    background-color: #ff9900;
-  }
-  
-  .clickable-name {
-    cursor: pointer;
-    padding: 4px 8px;
-    border-radius: 4px;
-    transition: all 0.2s ease;
-  }
-  
-  .clickable-name.hovered:hover {
-    background-color: #e9ecef;
-    color: #0056b3;
-  }
-  
-  .clickable-name.hovered.selected {
-    background-color: #007bff;
-    color: white;
-  }
-  
-  /* Disable clicking when not selectable */
-  .clickable-name:not(.hovered) {
-    cursor: default;
-  }
+/* Floating $ circle style */
+.floating-dollar {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  background-color: #ffcc00;
+  color: white;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: bold;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+}
 
-  .floating-card {
-    position: fixed;
-    background-color: #ffffff;
-    border-radius: 12px;
-    padding: 16px 20px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-    z-index: 1000;
-  }
+/* Optional: Add hover effect */
+.floating-dollar:hover {
+  background-color: #ff9900;
+}
+
+/* Card image styles */
+.card-img {
+  width: 100px;
+  height: auto;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.card-img:hover {
+  transform: scale(1.1); /* Slight zoom on hover */
+}
+
+/* Prevent overflowing when zooming */
+.card-container {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+}
+
+/* Floating card styles */
+.floating-card {
+  position: fixed;
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 16px 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+}
+
+/* Flex container for player cards */
+.d-flex.flex-wrap {
+  width: 100%;
+}
+
+/* Clickable name style */
+.clickable-name {
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.clickable-name.hovered:hover {
+  background-color: #e9ecef;
+  color: #0056b3;
+}
+
+.clickable-name.hovered.selected {
+  background-color: #007bff;
+  color: white;
+}
+
+/* Disable clicking when not selectable */
+.clickable-name:not(.hovered) {
+  cursor: default;
+}

@@ -98,6 +98,8 @@ export class GameService {
   turn (player:Player){
     if (player.hand.length == 0){
       this.draw(player, 5);
+    } else {
+      this.draw(player, 2);
     }
     this.statusMessageSubject.next(null); // reset tooltip
     
@@ -277,6 +279,8 @@ export class GameService {
     // ✅ Draw 5 cards if the player has an empty hand
     if (nextPlayer.hand.length === 0) {
         this.draw(nextPlayer, 5);
+    } else {
+      this.draw(nextPlayer, 2);
     }
 
     this.currentPlayerSubject.next(nextPlayer); // Notify subscribers
