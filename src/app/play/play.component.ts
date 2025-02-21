@@ -99,14 +99,20 @@ export class PlayComponent implements OnInit {
       console.log("not your turn");
       return
     }
+
+    const wasLastDiscard = this.gameService.discardAmount === 1;
     this.gameService.playCard(player, card);
-    this.decrementActions()
+    if (!wasLastDiscard) {
+      this.decrementActions()
+    }
   }
 
   decrementActions() {
-    this.actions--;
-    if (this.actions == 0){
-      this.endTurn();
+    if (this.gameService.discardAmount === 0) {
+      this.actions--;
+      if (this.actions == 0){
+        this.endTurn();
+      }
     }
   }
 

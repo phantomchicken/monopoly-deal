@@ -19,6 +19,7 @@ export class GameService {
   public currentPlayer: Player | undefined;
   public actions:number = 3;
   public propertySetSizes = require('../assets/sets.json');
+  public discardAmount:number = 0;
 
   statusMessage: string | null | undefined = null;
   decisionState: 'playing' | 'paying' | null = null;
@@ -109,6 +110,24 @@ export class GameService {
   }
   
   playCard(player:Player,card:Card){
+    if (this.discardAmount > 0 ){
+      this.game.discard.push(card);
+      this.discardSubject.next(this.game.discard);
+      player.hand.splice(player.hand.indexOf(card), 1);
+      this.discardAmount--;
+      if (this.discardAmount == 0){
+        this.discardAmount = 0;
+        this.statusMessageSubject.next(null);
+        this.actions = 3;
+        this.endTurn();
+      }
+      return
+    } 
+    
+    if (this.hasThreeFullSets(player)){
+      this.statusMessageSubject.next(player.name + ' has three full sets and has won the game!');
+    }
+    
     switch(card.type){
       case 'property':
         card = card as PropertyCard;
@@ -123,9 +142,6 @@ export class GameService {
         this.game.discard.push(card);
         this.discardSubject.next(this.game.discard);
         break;
-    }
-    if (this.hasThreeFullSets(player)){
-      this.statusMessageSubject.next(player.name + ' has three full sets and has won the game!');
     }
     player.hand.splice(player.hand.indexOf(card), 1);
   }
@@ -273,8 +289,15 @@ export class GameService {
   }
 
   endTurn() {
+    let currentPlayer = this.game.players[this.playerIndex];
+    if (currentPlayer.hand.length > 7) {
+      this.statusMessageSubject.next(currentPlayer.name + ' has more than 7 cards, he must discard some.');
+      this.discardAmount = currentPlayer.hand.length - 7;
+      return;
+    }
+
     this.playerIndex = (this.playerIndex + 1) % this.game.players.length;
-    const nextPlayer = this.game.players[this.playerIndex];
+    let nextPlayer = this.game.players[this.playerIndex];
 
     // ✅ Draw 5 cards if the player has an empty hand
     if (nextPlayer.hand.length === 0) {
