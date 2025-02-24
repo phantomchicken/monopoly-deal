@@ -111,7 +111,7 @@ export class PlayComponent implements OnInit {
 
     this.gameService.playCard(player, card);
     
-    if (!wasLastDiscard && !isInteractiveCard && this.decisionState !== "paying") { // paying?
+    if (!wasLastDiscard && !isInteractiveCard && this.decisionState !== "paying") {
       this.decrementActions()
     }
   }

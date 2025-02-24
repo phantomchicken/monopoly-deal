@@ -171,7 +171,9 @@ export class GameService {
         break;
       case "It's My Birthday":
         otherPlayers.forEach(p => {
-          this.paymentQueue.push({ from: p, to: currentPlayer, amount: 2 });
+          if (this.getTotalPayableAmount(p) != 0) {
+            this.paymentQueue.push({ from: p, to: currentPlayer, amount: 2 });
+          }
         });
 
         this.paymentQueueSubject.next(this.paymentQueue); // ✅ Notify subscribers
@@ -218,7 +220,9 @@ export class GameService {
 
         // Make the other players pay the highest rent value
         otherPlayers.forEach(p => {
-            this.paymentQueue.push({ from: p, to: currentPlayer, amount: maxRent });
+            if (this.getTotalPayableAmount(p) != 0) {
+              this.paymentQueue.push({ from: p, to: currentPlayer, amount: maxRent });
+            }
         });
 
         this.paymentQueueSubject.next(this.paymentQueue); // ✅ Notify subscribers
@@ -354,7 +358,7 @@ export class GameService {
       }
     }
     this.resetPropertySelection(); // so forced and sly deal still work
-    this.actionCompleteSubject.next(true);
+    //this.actionCompleteSubject.next(true); // completed when queue is empty not when card selected
     return
   }
 
@@ -365,7 +369,8 @@ export class GameService {
         this.statusMessageSubject.next(`${from.name}, select a card to pay ${amount} to ${to.name}.`);
     } else {
         this.statusMessageSubject.next(null);
-        this.decisionState = "playing" //? or paying?
+        this.actionCompleteSubject.next(true); // completed when queue is empty
+        this.decisionState = "playing"
     }
   }
   
