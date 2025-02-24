@@ -85,6 +85,12 @@ export class PlayComponent implements OnInit {
       this.selectedProperty = property;
     });
   
+    this.gameService.actionComplete$.subscribe(complete => {
+      if (complete) {
+        this.decrementActions();
+        this.gameService.actionCompleteSubject.next(false); // Reset the flag
+      }
+    });
   }
 
   setup(){
@@ -101,8 +107,11 @@ export class PlayComponent implements OnInit {
     }
 
     const wasLastDiscard = this.gameService.discardAmount === 1;
+    const isInteractiveCard = this.gameService.isInteractiveCard(card);
+
     this.gameService.playCard(player, card);
-    if (!wasLastDiscard) {
+    
+    if (!wasLastDiscard && !isInteractiveCard && this.decisionState !== "paying") { // paying?
       this.decrementActions()
     }
   }

@@ -66,6 +66,8 @@ export class GameService {
   private selectedTargetPlayerSubject = new BehaviorSubject<Player | null>(null);
   selectedTargetPlayer$ = this.selectedTargetPlayerSubject.asObservable();
 
+  public actionCompleteSubject = new BehaviorSubject<boolean>(false);
+  actionComplete$ = this.actionCompleteSubject.asObservable();
 
   setup (name:string, numberOfPlayers:number){
     if (this.game.players.length == 0) { // for easy drawing TODO replace
@@ -318,7 +320,7 @@ export class GameService {
     this.paymentState = { from, to, amount };
     this.paymentStateSubject.next(this.paymentState);
     this.statusMessageSubject.next(`${from.name}, select a card to pay ${amount} to ${to.name}.`);
-
+    
     return `${from.name}, select a card to pay ${amount} to ${to.name}.`;
   }
   
@@ -348,9 +350,11 @@ export class GameService {
         this.processNextPayment();
       } else {
         this.statusMessageSubject.next(`${from.name}, continue selecting cards to cover ${this.paymentQueue[0].amount}.`);
+        this.decisionState = "paying"
       }
     }
     this.resetPropertySelection(); // so forced and sly deal still work
+    this.actionCompleteSubject.next(true);
     return
   }
 
@@ -361,6 +365,7 @@ export class GameService {
         this.statusMessageSubject.next(`${from.name}, select a card to pay ${amount} to ${to.name}.`);
     } else {
         this.statusMessageSubject.next(null);
+        this.decisionState = "playing" //? or paying?
     }
   }
   
@@ -417,6 +422,8 @@ export class GameService {
     to.properties.push(property);
     this.statusMessageSubject.next(`${to.name} stole ${property.name} from ${from.name}`);
     this.resetPropertySelection();
+
+    this.actionCompleteSubject.next(true);
   }
 
   private executePropertySwap(player1: Player, player2: Player, prop1: PropertyCard, prop2: PropertyCard) {
@@ -432,6 +439,8 @@ export class GameService {
     this.statusMessageSubject.next(
       `${player1.name} swapped their ${prop1.name} for ${player2.name}'s ${prop2.name}`
     );
+
+    this.actionCompleteSubject.next(true);
   }
 
   private resetPropertySelection() {
@@ -439,6 +448,23 @@ export class GameService {
     this.isForcedDealActiveSubject.next(false);
     this.selectedPropertySubject.next(null);
     this.selectedTargetPlayerSubject.next(null);
+  }
+
+  isInteractiveCard(card: Card): boolean {
+    if (card.type !== 'action') return false;
+    
+    switch(card.name) {
+      case 'Debt Collector':
+        return true;
+      case 'Sly Deal':
+        return true;
+      case 'Forced Deal':
+        return true;
+      case 'Deal Breaker':
+        return true;
+      default :
+        return false
+    }
   }
 
 }
