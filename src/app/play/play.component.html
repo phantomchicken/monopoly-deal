@@ -62,7 +62,13 @@
                             <div class="col-4">
                                 <h6 class="card-title">Properties:</h6>
                                 <div class="d-flex flex-wrap gap-2">
-                                    <img *ngFor="let prop of sortProperties(player)" [src]="'assets/' + prop.imageName" [alt]="prop.name" class="card-img" (click)="selectCard(player, prop)">
+                                    <div *ngFor="let prop of sortProperties(player)">
+                                        <div class="card-container">
+                                        <img [src]="'assets/' + prop.imageName" [alt]="prop.name" class="card-img" [ngClass]="{'flip': isFlipped(prop)}" (click)="selectCard(player, prop)">
+                                        <div *ngIf="isWildcard(prop) && player == currentPlayer" class="floating-dollar" (click)="flip(prop)">🔄
+                                        </div>
+                                    </div>
+                                </div>
                                 </div>
                             </div>
 

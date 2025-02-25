@@ -5,6 +5,7 @@ import { Player } from './classes/player';
 import { Card, PropertyCard } from './classes/card';
 import { CardService } from 'src/app/card.service';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { COLOR_RENT_MAP } from './color-rent-map';
 
 @Injectable({
   providedIn: 'root'
@@ -88,7 +89,8 @@ export class GameService {
       this.game.deck = this.shuffle(cards);
       this.deckSubject.next(this.game.deck); // ✅ Emit new deck state
       
-      for (let i=0; i<numberOfPlayers; i++){
+      this.draw(this.game.players[0], 7);
+      for (let i=1; i<numberOfPlayers; i++){
         this.draw(this.game.players[i], 5);
       }
       
@@ -469,6 +471,23 @@ export class GameService {
         return true;
       default :
         return false
+    }
+  }
+
+  flip (card :Card){
+    const propertyCard = card as PropertyCard;
+
+    if (!propertyCard.currentColor) {
+      propertyCard.currentColor = propertyCard.colors[0];
+    }
+
+
+    propertyCard.currentColor = propertyCard.currentColor === propertyCard.colors[0] ? propertyCard.colors[1] : propertyCard.colors[0];
+
+    const colorInfo = COLOR_RENT_MAP.get(propertyCard.currentColor);
+    if (colorInfo) {
+      propertyCard.rentValues = colorInfo.rentValues;
+      propertyCard.setSize = colorInfo.setSize;
     }
   }
 

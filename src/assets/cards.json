@@ -384,6 +384,87 @@
     },
     {
         "type": "property",
+        "name": "Wildcard Orange & Pink",
+        "colors": ["orange", "pink"],
+        "value": 2,
+        "setSize": 3,
+        "rentValues": [1, 3, 5],
+        "imageName": "wcorangepink.png"
+    },
+    {
+        "type": "property",
+        "name": "Wildcard Orange & Pink",
+        "colors": ["orange", "pink"],
+        "value": 2,
+        "setSize": 3,
+        "rentValues": [1, 3, 5],
+        "imageName": "wcorangepink.png"
+    },
+    {
+        "type": "property",
+        "name": "Wildcard Light Blue & Brown",
+        "colors": ["light blue", "brown"],
+        "value": 1,
+        "setSize": 3,
+        "rentValues": [1, 2, 3],
+        "imageName": "wclightbluebrown.png"
+    },
+    {
+        "type": "property",
+        "name": "Wildcard Light Blue & Black",
+        "colors": ["light blue", "black"],
+        "value": 1,
+        "setSize": 3,
+        "rentValues": [1, 2, 3],
+        "imageName": "wclightblueblack.png"
+    },
+    {
+        "type": "property",
+        "name": "Wildcard Dark Blue & Dark Green",
+        "colors": ["dark blue", "dark green"],
+        "value": 4,
+        "setSize": 2,
+        "rentValues": [3, 8],
+        "imageName": "wcdarkbluedarkgreen.png"
+    },
+    {
+        "type": "property",
+        "name": "Wildcard Dark Green & Black",
+        "colors": ["dark green", "black"],
+        "value": 4,
+        "setSize": 3,
+        "rentValues": [2, 4, 7],
+        "imageName": "wcdarkgreenblack.png"
+    },
+    {
+        "type": "property",
+        "name": "Wildcard Yellow & Red",
+        "colors": ["yellow", "red"],
+        "value": 3,
+        "setSize": 3,
+        "rentValues": [2, 4, 6],
+        "imageName": "wcyellowred.png"
+    },
+    {
+        "type": "property",
+        "name": "Wildcard Yellow & Red",
+        "colors": ["yellow", "red"],
+        "value": 3,
+        "setSize": 3,
+        "rentValues": [2, 4, 6],
+        "imageName": "wcyellowred.png"
+    },
+    {
+        "type": "property",
+        "name": "Wildcard Light Green & Black",
+        "colors": ["light green", "black"],
+        "value": 2,
+        "setSize": 2,
+        "rentValues": [1, 2],
+        "imageName": "wclightgreenblack.png"
+    },
+    {
+        "type": "property",
         "name": "Boardwalk",
         "colors": [
             "dark blue"

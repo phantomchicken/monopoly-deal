@@ -79,3 +79,7 @@
 .clickable-name:not(.hovered) {
   cursor: default;
 }
+
+.flip {
+  transform: rotate(180deg);
+}

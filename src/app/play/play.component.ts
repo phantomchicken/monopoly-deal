@@ -193,4 +193,19 @@ export class PlayComponent implements OnInit {
     this.gameService.selectOwnProperty(property);
   }
 
+  flip(card: Card){
+    this.gameService.flip(card)
+  }
+
+  isFlipped(card:Card){
+    const propertyCard = card as PropertyCard;
+    propertyCard.currentColor ??= propertyCard.colors[0]; // set to first color initially
+    return propertyCard.currentColor === propertyCard.colors[1];
+  }
+
+  isWildcard(card:Card){
+    let name = card.name.toLowerCase();
+    return /wildcard/.test(name) && /&/.test(name);
+  }
+
 }
