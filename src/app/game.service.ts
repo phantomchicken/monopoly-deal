@@ -503,4 +503,17 @@ export class GameService {
     }
   }
 
+  changeCurrentColor(card: Card, newColor: string) {
+    card = card as PropertyCard;
+    if (card.colors.includes(newColor)) {
+      card.currentColor = newColor;
+  
+      const colorInfo = COLOR_RENT_MAP.get(newColor);
+      if (colorInfo) {
+        card.rentValues = colorInfo.rentValues;
+        card.setSize = colorInfo.setSize;
+      }
+    }
+  }
+
 }

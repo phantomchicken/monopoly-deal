@@ -67,6 +67,15 @@
                                         <img [src]="'assets/' + prop.imageName" [alt]="prop.name" class="card-img" [ngClass]="{'flip': isFlipped(prop)}" (click)="selectCard(player, prop)">
                                         <div *ngIf="isWildcard(prop) && player == currentPlayer" class="floating-dollar" (click)="flip(prop)">🔄
                                         </div>
+                                        <div *ngIf="isWildcardProper(prop) && player === currentPlayer" class="mt-2">
+                                            <select class="form-select form-select-sm" 
+                                                    [(ngModel)]="prop.currentColor" 
+                                                    (change)="changeColor(prop, prop.currentColor)">
+                                              <option *ngFor="let color of prop.colors" [value]="color">
+                                                {{ color | titlecase }}
+                                              </option>
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
                                 </div>

@@ -208,4 +208,14 @@ export class PlayComponent implements OnInit {
     return /wildcard/.test(name) && /&/.test(name);
   }
 
+  isWildcardProper(card: Card): boolean {
+    const name = card.name.toLowerCase();
+    const propertyCard = card as PropertyCard;
+    return /wildcard/.test(name) && propertyCard.colors.length > 2; // True wildcards have more than 2 colors
+  }
+  
+  changeColor(card: Card, color: string) {
+    this.gameService.changeCurrentColor(card, color);
+  }
+  
 }

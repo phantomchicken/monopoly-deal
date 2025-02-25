@@ -413,7 +413,7 @@
         "type": "property",
         "name": "Wildcard Light Blue & Black",
         "colors": ["light blue", "black"],
-        "value": 1,
+        "value": 4,
         "setSize": 3,
         "rentValues": [1, 2, 3],
         "imageName": "wclightblueblack.png"
