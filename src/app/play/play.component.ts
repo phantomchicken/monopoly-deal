@@ -150,7 +150,7 @@ export class PlayComponent implements OnInit {
   }
 
   sortProperties(player:Player){
-    return player.properties.sort((a, b) => a.colors[0].localeCompare(b.colors[0]));
+    return player.properties.sort((a, b) => this.gameService.getCurrentColor(a).localeCompare(this.gameService.getCurrentColor(b)));
   }
 
   // Helper function to get the total available money/property a player can pay

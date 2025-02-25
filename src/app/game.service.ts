@@ -154,7 +154,7 @@ export class GameService {
     let sets = 0;
   
     this.propertySetSizeMap.forEach((setSize, color) => {
-      const count = player.properties.filter(p => p.colors.includes(color)).length;
+      const count = player.properties.filter(p => this.getCurrentColor(p) === color).length;
       if (count >= setSize) {
         sets++;
       }
@@ -203,7 +203,7 @@ export class GameService {
           let property = ownedProperties[i];
           
           // Increase count for the property color
-          let color = property.colors[0]; // Assuming each property only belongs to one color
+          let color = this.getCurrentColor(property) //property.colors[0]; // Assuming each property only belongs to one color
           let currentCount = rentMap.get(color) || 0;
           rentMap.set(color, currentCount + 1);
   
@@ -392,11 +392,11 @@ export class GameService {
     this.selectedPropertySubject.next(property);
 
     if (this.statusMessageSubject.value?.includes("set")) { // dealbreaker
-      let color = property.colors[0];
-      player.properties.filter((p) => p.colors[0] == color).forEach((p) => {
+      let color = this.getCurrentColor(property) //property.colors[0];
+      player.properties.filter((p) => this.getCurrentColor(p) == color).forEach((p) => { // p.colors[0]
         this.executePropertySteal(player, currentPlayer, p);
       })
-    }  else  if (player.properties.filter(p => p.colors[0] == property.colors[0]).length == property.setSize){ // if property is part of a set cannot steal unless dealbreaker
+    }  else  if (player.properties.filter(p => this.getCurrentColor(p) == this.getCurrentColor(property)).length == property.setSize){ // // p.colors[0] property.colors[0] if property is part of a set cannot steal unless dealbreaker
       this.statusMessageSubject.next ("Cannot steal from a set!");
       return
     }
@@ -488,6 +488,18 @@ export class GameService {
     if (colorInfo) {
       propertyCard.rentValues = colorInfo.rentValues;
       propertyCard.setSize = colorInfo.setSize;
+    }
+  }
+
+  getCurrentColor(card:PropertyCard){
+    let name = card.name.toLowerCase();
+    if (/wildcard/.test(name)){
+      if (!card.currentColor) {
+        card.currentColor = card.colors[0];
+      }
+      return card.currentColor; 
+    } else {
+      return card.colors[0];
     }
   }
 
