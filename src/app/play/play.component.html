@@ -65,6 +65,16 @@
                                     <div *ngFor="let prop of sortProperties(player)">
                                         <div class="card-container">
                                         <img [src]="'assets/' + prop.imageName" [alt]="prop.name" class="card-img" [ngClass]="{'flip': isFlipped(prop)}" (click)="selectCard(player, prop)">
+                                        <div class="d-flex gap-1 align-items-center mt-1" *ngIf="prop.buildings">
+                                            <div *ngIf="prop.buildings.house" class="building-card" (click)="selectCard(player, prop.buildings.house)">
+                                              <img [src]="'assets/' + prop.buildings.house.imageName" [alt]="prop.buildings.house.name" class="card-img">
+                                              <small>House {{prop.currentColor}}</small>
+                                            </div>
+                                            <div *ngIf="prop.buildings.hotel" class="building-card" (click)="selectCard(player, prop.buildings.hotel)">
+                                              <img [src]="'assets/' + prop.buildings.hotel.imageName" [alt]="prop.buildings.hotel.name" class="card-img">
+                                              <small>Hotel {{prop.currentColor}}</small>
+                                            </div>
+                                          </div>
                                         <div *ngIf="isWildcard(prop) && player == currentPlayer" class="floating-dollar" (click)="flip(prop)">🔄
                                         </div>
                                         <div *ngIf="isWildcardProper(prop) && player === currentPlayer" class="mt-2">

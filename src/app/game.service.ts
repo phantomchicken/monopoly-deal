@@ -29,6 +29,7 @@ export class GameService {
   paymentQueue: { from: Player, to: Player, amount: number }[] = [];
   propertySetSizeMap: Map<string, number> = new Map<string, number>();
   isDoubleTheRent: boolean = false;
+  pendingBuildingCard: Card | null = null;
 
   // ✅ BehaviorSubject holds and emits deck state changes
   private deckSubject = new BehaviorSubject<Card[]>([]);
@@ -69,6 +70,12 @@ export class GameService {
 
   public actionCompleteSubject = new BehaviorSubject<boolean>(false);
   actionComplete$ = this.actionCompleteSubject.asObservable();
+
+  private isSelectingPropertySetForBuildingSubject = new BehaviorSubject<boolean>(false);
+  isSelectingPropertySetForBuilding$ = this.isSelectingPropertySetForBuildingSubject.asObservable();
+
+  private buildingTypeSubject = new BehaviorSubject<string | null>(null);
+  buildingType$ = this.buildingTypeSubject.asObservable();
 
   setup (name:string, numberOfPlayers:number){
     if (this.game.players.length == 0) { // for easy drawing TODO replace
@@ -128,7 +135,7 @@ export class GameService {
       return
     } 
     
-    if (this.hasThreeFullSets(player)){
+    if (this.fullSets(player) >= 3){
       this.statusMessageSubject.next(player.name + ' has three full sets and has won the game!');
     }
     
@@ -150,7 +157,7 @@ export class GameService {
     player.hand.splice(player.hand.indexOf(card), 1);
   }
   
-  hasThreeFullSets(player: Player): boolean {
+  fullSets(player: Player): number {
     let sets = 0;
   
     this.propertySetSizeMap.forEach((setSize, color) => {
@@ -160,7 +167,7 @@ export class GameService {
       }
     });
   
-    return sets >= 3;
+    return sets;
   }
   
 
@@ -199,25 +206,32 @@ export class GameService {
         // hashmap
         let rentMap = new Map<string, number>();
         let maxRent = 0;
-        for (let i = 0; i < ownedProperties.length; i++) {
-          let property = ownedProperties[i];
-          
-          // Increase count for the property color
-          let color = this.getCurrentColor(property) //property.colors[0]; // Assuming each property only belongs to one color
-          let currentCount = rentMap.get(color) || 0;
-          rentMap.set(color, currentCount + 1);
-  
-          // Calculate rent based on the count of owned properties for this color
-          let rentValue = property.rentValues[currentCount]; // Get the correct rent value based on how many properties the player owns
-  
-          // Update the max rent value
-          if (rentValue > maxRent) {
-              maxRent = rentValue;
-          }
-        }
+        
+        // Group properties by color
+        const propertiesByColor = new Map<string, PropertyCard[]>();
+        ownedProperties.forEach((property) => {
+          const color = this.getCurrentColor(property);
+          propertiesByColor.set(color, [...(propertiesByColor.get(color) || []), property]);
+        });
+
+        // Calculate rent per color set
+        propertiesByColor.forEach((properties, color) => {
+          const propertyCount = properties.length;
+          const baseRent = properties[0].rentValues[propertyCount - 1] || 0; // Rent based on total properties
+          let bonus = 0;
+
+          // Check if the set has a house or hotel (check first property in the set)
+          const setBuildings = properties[0].buildings;
+          if (setBuildings?.house) bonus += 3;
+          if (setBuildings?.hotel) bonus += 4;
+
+          const totalRent = baseRent + bonus;
+          if (totalRent > maxRent) maxRent = totalRent; // Update max rent if higher
+        });
 
         if (this.isDoubleTheRent){
           maxRent *= 2;
+          this.isDoubleTheRent = false;
         }
 
         // Make the other players pay the highest rent value
@@ -251,6 +265,19 @@ export class GameService {
         this.isPropertySelectableSubject.next(true);
         this.isForcedDealActiveSubject.next(false);
         this.statusMessageSubject.next('Select a set to steal from another player');
+        break;
+      case 'House':
+      case 'Hotel':
+        if (this.fullSets(currentPlayer) < 1){
+          this.statusMessageSubject.next('Must have a full property set!');
+          return
+        }
+        
+        this.isSelectingPropertySetForBuildingSubject.next(true);
+        this.buildingTypeSubject.next(card.name); 
+        this.statusMessageSubject.next(`Select a property set to add ${card.name} to`);
+        this.pendingBuildingCard = card;
+
         break;
     }
   }
@@ -344,6 +371,17 @@ export class GameService {
     } else if (from.properties.includes(card as PropertyCard)) {
       from.properties = from.properties.filter(c => c !== card);
       to.properties.push(card as PropertyCard);
+      paid = true;
+    } else if (card.name == 'Hotel' || card.name == 'House'){
+      for (let property of from.properties) {
+        if (property.buildings?.hotel === card) {
+          property.buildings.hotel = null;
+        }
+        if (property.buildings?.house === card) {
+          property.buildings.house = null;
+        }
+      }
+      to.bank.push(card);
       paid = true;
     }
   
@@ -469,6 +507,10 @@ export class GameService {
         return true;
       case 'Deal Breaker':
         return true;
+      case 'House':
+        return true;
+      case 'Hotel':
+        return true;
       default :
         return false
     }
@@ -514,6 +556,40 @@ export class GameService {
         card.setSize = colorInfo.setSize;
       }
     }
+  }
+
+  selectPropertySetForBuilding(property: PropertyCard) {  
+    const currentPlayer = this.game.players[this.playerIndex];
+    const color = this.getCurrentColor(property);
+    
+    // Check if this is a full set
+    const setProperties = currentPlayer.properties.filter(p => this.getCurrentColor(p) === color);
+    const setSize = COLOR_RENT_MAP.get(color)?.setSize || 0;
+    
+    if (setProperties.length < setSize) {
+      this.statusMessageSubject.next('This is not a full property set!');
+      return;
+    } //TODO utilites and railroads
+    
+    // Add the building to the first property in the set (or you could choose a specific property)
+    const targetProperty = setProperties[0];
+    if (!targetProperty.buildings) {
+      targetProperty.buildings = { house: null, hotel: null };
+    }
+    
+    if (this.buildingTypeSubject.value === 'House') {
+      targetProperty.buildings.house = this.pendingBuildingCard;
+    } else if (this.buildingTypeSubject.value === 'Hotel') {
+      targetProperty.buildings.hotel = this.pendingBuildingCard;
+    }
+    
+    // Reset state
+    this.pendingBuildingCard = null;
+    this.isSelectingPropertySetForBuildingSubject.next(false);
+    this.statusMessageSubject.next(`Added ${this.buildingTypeSubject.value} to ${color} set!`);
+    this.buildingTypeSubject.next(null);
+    
+    this.actionCompleteSubject.next(true);
   }
 
 }

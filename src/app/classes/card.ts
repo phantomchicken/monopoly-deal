@@ -21,6 +21,7 @@ export interface PropertyCard extends BaseCard {
     currentColor: string;
     setSize: number;
     rentValues: number[];
+    buildings?: {house: Card | null, hotel: Card | null};
 }
 
 export type Card = ActionCard | MoneyCard | PropertyCard;

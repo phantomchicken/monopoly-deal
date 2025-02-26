@@ -36,6 +36,9 @@ export class PlayComponent implements OnInit {
   isPropertySelectable = false;
   isForcedDealActive = false;
   selectedProperty: PropertyCard | null = null;
+
+  isSelectingPropertySetForBuilding = false;
+  buildingType: string | null = null;
   
   ngOnInit(): void {
     this.gameService.deck$.subscribe(deck => {
@@ -90,6 +93,14 @@ export class PlayComponent implements OnInit {
         this.decrementActions();
         this.gameService.actionCompleteSubject.next(false); // Reset the flag
       }
+    });
+
+    this.gameService.isSelectingPropertySetForBuilding$.subscribe(isSelecting => {
+      this.isSelectingPropertySetForBuilding = isSelecting;
+    });
+    
+    this.gameService.buildingType$.subscribe(type => {
+      this.buildingType = type;
     });
   }
 
@@ -146,6 +157,8 @@ export class PlayComponent implements OnInit {
       else if (this.isForcedDealActive && player === this.currentPlayer) {
         this.gameService.selectOwnProperty(card as PropertyCard);
       }
+    } else if (this.isSelectingPropertySetForBuilding && player === this.currentPlayer && card.type === 'property') {
+      this.gameService.selectPropertySetForBuilding(card as PropertyCard);
     }
   }
 
