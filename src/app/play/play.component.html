@@ -67,17 +67,19 @@
                                         <img [src]="'assets/' + prop.imageName" [alt]="prop.name" class="card-img" [ngClass]="{'flip': isFlipped(prop)}" (click)="selectCard(player, prop)">
                                         <div class="d-flex gap-1 align-items-center mt-1" *ngIf="prop.buildings">
                                             <div *ngIf="prop.buildings.house" class="building-card" (click)="selectCard(player, prop.buildings.house)">
+                                              <div class="color-badge" [ngClass]="prop.currentColor.replace(' ', '-')"></div>
                                               <img [src]="'assets/' + prop.buildings.house.imageName" [alt]="prop.buildings.house.name" class="card-img">
-                                              <small>House {{prop.currentColor}}</small>
                                             </div>
+                                          
                                             <div *ngIf="prop.buildings.hotel" class="building-card" (click)="selectCard(player, prop.buildings.hotel)">
+                                              <div class="color-badge" [ngClass]="prop.currentColor.replace(' ', '-')"></div>
                                               <img [src]="'assets/' + prop.buildings.hotel.imageName" [alt]="prop.buildings.hotel.name" class="card-img">
-                                              <small>Hotel {{prop.currentColor}}</small>
                                             </div>
-                                          </div>
+                                          </div>                                          
                                         <div *ngIf="isWildcard(prop) && player == currentPlayer" class="floating-dollar" (click)="flip(prop)">🔄
                                         </div>
                                         <div *ngIf="isWildcardProper(prop) && player === currentPlayer" class="mt-2">
+                                            <div class="color-badge" [ngClass]="prop.currentColor.toLowerCase().replace(' ', '-')"></div>
                                             <select class="form-select form-select-sm" 
                                                     [(ngModel)]="prop.currentColor" 
                                                     (change)="changeColor(prop, prop.currentColor)">

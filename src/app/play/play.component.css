@@ -83,3 +83,30 @@
 .flip {
   transform: rotate(180deg);
 }
+
+.building-card {
+  position: relative;
+  display: inline-block;
+}
+
+.color-badge {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  border: 1px solid #333;
+}
+
+/* Color mappings */
+.brown { background-color: #8B4513; }
+.light-blue { background-color: #87CEFA; }
+.pink { background-color: #FF69B4; }
+.orange { background-color: #FFA500; }
+.red { background-color: #FF0000; }
+.yellow { background-color: #FFD700; }
+.light-green { background-color: #90EE90; }
+.dark-green { background-color: #006400; }
+.dark-blue { background-color: #00008B; }
+.black { background-color: #333333; }

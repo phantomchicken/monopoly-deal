@@ -326,7 +326,7 @@ export class GameService {
   endTurn() {
     let currentPlayer = this.game.players[this.playerIndex];
     if (currentPlayer.hand.length > 7) {
-      this.statusMessageSubject.next(currentPlayer.name + ' has more than 7 cards, he must discard some.');
+      this.statusMessageSubject.next(currentPlayer.name + ' has more than 7 cards, they must discard some.');
       this.discardAmount = currentPlayer.hand.length - 7;
       return;
     }
