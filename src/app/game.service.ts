@@ -77,6 +77,9 @@ export class GameService {
   private buildingTypeSubject = new BehaviorSubject<string | null>(null);
   buildingType$ = this.buildingTypeSubject.asObservable();
 
+  private isJustSayNoActiveSubject = new BehaviorSubject<{ from: Player, to: Player, amount: number} | undefined>(undefined);
+  isJustSayNoActive$ = this.isJustSayNoActiveSubject.asObservable();
+
   setup (name:string, numberOfPlayers:number){
     if (this.game.players.length == 0) { // for easy drawing TODO replace
       this.playerNames.unshift(name);
@@ -170,6 +173,9 @@ export class GameService {
     return sets;
   }
   
+  playerHasJustSayNo(player: Player): boolean {
+    return player.hand.some(card => card.name === 'Just Say No');
+  }
 
   playActionCard(card:Card){
     let currentPlayer = this.game.players[this.playerIndex];
@@ -234,6 +240,7 @@ export class GameService {
           this.isDoubleTheRent = false;
         }
 
+        // TODO pick and charge just one player
         // Make the other players pay the highest rent value
         otherPlayers.forEach(p => {
             if (this.getTotalPayableAmount(p) != 0) {
@@ -299,6 +306,9 @@ export class GameService {
     this.paymentQueue.push({ from, to, amount: 5 });
     this.paymentQueueSubject.next(this.paymentQueue);
     this.processNextPayment();
+    // if (this.playerHasJustSayNo(from)){
+    //   this.isJustSayNoActiveSubject.next({from: from, to: to, amount: 5});
+    // }
   }
 
   draw(player: Player, numberOfCards: number){
@@ -407,8 +417,13 @@ export class GameService {
         let { from, to, amount } = this.paymentQueue[0];
         if (this.getTotalPayableAmount(from) == 0) return;
         this.statusMessageSubject.next(`${from.name}, select a card to pay ${amount} to ${to.name}.`);
+        
+        if (this.playerHasJustSayNo(from)){
+          this.isJustSayNoActiveSubject.next({from: from, to: to, amount: amount});
+        }
     } else {
         this.statusMessageSubject.next(null);
+        this.isJustSayNoActiveSubject.next(undefined);
         this.actionCompleteSubject.next(true); // completed when queue is empty
         this.decisionState = "playing"
     }
@@ -590,6 +605,27 @@ export class GameService {
     this.buildingTypeSubject.next(null);
     
     this.actionCompleteSubject.next(true);
+  }
+
+  sayNo(useJustSayNo: boolean) {
+    const activePayment = this.isJustSayNoActiveSubject.value;
+    if (!useJustSayNo || !activePayment) return;
+  
+    const { from, to, amount } = activePayment;
+  
+    this.paymentQueue = this.paymentQueue.filter((p) => !(p.from === from && p.to === to && p.amount === amount));
+    this.paymentQueueSubject.next(this.paymentQueue);
+    
+    const justSayNoCard = from.hand.find(c => c.name === 'Just Say No');
+    from.hand = from.hand.filter(c => c !== justSayNoCard);
+    this.game.discard.push(justSayNoCard!);
+    this.discardSubject.next(this.game.discard);
+
+  
+    this.statusMessageSubject.next(`${from.name} just said no!`);
+  
+    this.isJustSayNoActiveSubject.next(undefined);
+    this.processNextPayment();
   }
 
 }

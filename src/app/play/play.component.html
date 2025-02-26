@@ -10,6 +10,9 @@
 
             <div *ngIf="statusMessage" class="alert alert-info floating-card position-fixed bottom-0 start-50 translate-middle-x mb-5 text-center bg-white bg-rounded" >
                 {{ statusMessage }}
+                <div *ngIf="targetPlayerForJustSayNo && statusMessage.includes(targetPlayerForJustSayNo.name)" class="mt-2">
+                    <button class="btn btn-danger" (click)="sayNo(true)">Say No</button>
+                </div>
             </div>
         </div>
     </div>

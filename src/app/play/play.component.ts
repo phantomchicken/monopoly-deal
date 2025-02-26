@@ -39,6 +39,9 @@ export class PlayComponent implements OnInit {
 
   isSelectingPropertySetForBuilding = false;
   buildingType: string | null = null;
+
+  targetPlayerForJustSayNo: Player | null = null;
+  pendingActionCard: Card | null = null;
   
   ngOnInit(): void {
     this.gameService.deck$.subscribe(deck => {
@@ -102,6 +105,12 @@ export class PlayComponent implements OnInit {
     this.gameService.buildingType$.subscribe(type => {
       this.buildingType = type;
     });
+
+    this.gameService.isJustSayNoActive$.subscribe(isActive => {
+      if (isActive) {
+        this.targetPlayerForJustSayNo = isActive?.from ?? null;
+      }
+    })
   }
 
   setup(){
@@ -229,6 +238,16 @@ export class PlayComponent implements OnInit {
   
   changeColor(card: Card, color: string) {
     this.gameService.changeCurrentColor(card, color);
+  }
+
+  sayNo(useJustSayNo: boolean) {
+    // if (!this.targetPlayerForJustSayNo) return;
+    
+    // Pass the decision to the service
+    this.gameService.sayNo(useJustSayNo);
+    
+    // Reset local state
+    this.targetPlayerForJustSayNo = null;
   }
   
 }
