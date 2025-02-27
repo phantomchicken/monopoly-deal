@@ -77,7 +77,7 @@ export class GameService {
   private buildingTypeSubject = new BehaviorSubject<string | null>(null);
   buildingType$ = this.buildingTypeSubject.asObservable();
 
-  private isJustSayNoActiveSubject = new BehaviorSubject<{ from: Player, to: Player, amount: number} | undefined>(undefined);
+  private isJustSayNoActiveSubject = new BehaviorSubject<{ from: Player, to: Player, amount: number, fromCards: Card[], toCards: Card[], dealbreaker: boolean} | undefined>(undefined);
   isJustSayNoActive$ = this.isJustSayNoActiveSubject.asObservable();
 
   setup (name:string, numberOfPlayers:number){
@@ -306,9 +306,6 @@ export class GameService {
     this.paymentQueue.push({ from, to, amount: 5 });
     this.paymentQueueSubject.next(this.paymentQueue);
     this.processNextPayment();
-    // if (this.playerHasJustSayNo(from)){
-    //   this.isJustSayNoActiveSubject.next({from: from, to: to, amount: 5});
-    // }
   }
 
   draw(player: Player, numberOfCards: number){
@@ -351,6 +348,7 @@ export class GameService {
       this.draw(nextPlayer, 2);
     }
 
+    this.isJustSayNoActiveSubject.next(undefined);
     this.currentPlayerSubject.next(nextPlayer); // Notify subscribers
     this.actions = 3; // Reset actions
     this.isDoubleTheRent = false;
@@ -419,7 +417,7 @@ export class GameService {
         this.statusMessageSubject.next(`${from.name}, select a card to pay ${amount} to ${to.name}.`);
         
         if (this.playerHasJustSayNo(from)){
-          this.isJustSayNoActiveSubject.next({from: from, to: to, amount: amount});
+          this.isJustSayNoActiveSubject.next({from: from, to: to, amount: amount, fromCards:[], toCards:[], dealbreaker: false});
         }
     } else {
         this.statusMessageSubject.next(null);
@@ -446,9 +444,19 @@ export class GameService {
 
     if (this.statusMessageSubject.value?.includes("set")) { // dealbreaker
       let color = this.getCurrentColor(property) //property.colors[0];
+      let stolenProperties: PropertyCard[] = [];
+
       player.properties.filter((p) => this.getCurrentColor(p) == color).forEach((p) => { // p.colors[0]
+        stolenProperties.push(p);
         this.executePropertySteal(player, currentPlayer, p);
       })
+
+      if (this.playerHasJustSayNo(player)){
+        this.isJustSayNoActiveSubject.next({from: player, to: currentPlayer, amount: 0, fromCards:stolenProperties, toCards:[], dealbreaker: true});
+        let msg = this.playerHasJustSayNo(player) ? " Say no to the steal?" : "";
+        this.statusMessageSubject.next(`${currentPlayer.name} stole a set from ${player.name}.${msg}`)
+      }
+
     }  else  if (player.properties.filter(p => this.getCurrentColor(p) == this.getCurrentColor(property)).length == property.setSize){ // // p.colors[0] property.colors[0] if property is part of a set cannot steal unless dealbreaker
       this.statusMessageSubject.next ("Cannot steal from a set!");
       return
@@ -480,28 +488,31 @@ export class GameService {
   private executePropertySteal(from: Player, to: Player, property: PropertyCard) {
     from.properties = from.properties.filter(p => p !== property);
     to.properties.push(property);
-    this.statusMessageSubject.next(`${to.name} stole ${property.name} from ${from.name}`);
-    this.resetPropertySelection();
-
-    this.actionCompleteSubject.next(true);
+  
+    if (this.playerHasJustSayNo(from)) {
+      this.isJustSayNoActiveSubject.next({ from, to, amount: 0, fromCards: [property], toCards: [], dealbreaker: false });
+      this.statusMessageSubject.next(`${to.name} stole ${property.name} from ${from.name}. Say no to the steal?`);
+    } else {
+      this.statusMessageSubject.next(`${to.name} stole ${property.name} from ${from.name}.`);
+      this.actionCompleteSubject.next(true); // ✅ Only complete if no Say No
+    }
   }
 
-  private executePropertySwap(player1: Player, player2: Player, prop1: PropertyCard, prop2: PropertyCard) {
-    // Remove properties from current owners
-    player1.properties = player1.properties.filter(p => p !== prop1);
-    player2.properties = player2.properties.filter(p => p !== prop2);
-    
-    // Add to new owners
-    player1.properties.push(prop2);
-    player2.properties.push(prop1);
-
-    // Update status message
-    this.statusMessageSubject.next(
-      `${player1.name} swapped their ${prop1.name} for ${player2.name}'s ${prop2.name}`
-    );
-
-    this.actionCompleteSubject.next(true);
+  private executePropertySwap(from: Player, to: Player, prop1: PropertyCard, prop2: PropertyCard) {
+    from.properties = from.properties.filter(p => p !== prop1);
+    to.properties = to.properties.filter(p => p !== prop2);
+    from.properties.push(prop2);
+    to.properties.push(prop1);
+  
+    if (this.playerHasJustSayNo(from)) {
+      this.isJustSayNoActiveSubject.next({ from, to, amount: 0, fromCards: [prop1], toCards: [prop2], dealbreaker: false });
+      this.statusMessageSubject.next(`${from.name} swapped their ${prop1.name} for ${to.name}'s ${prop2.name}. Say no to the swap?`);
+    } else {
+      this.statusMessageSubject.next(`${from.name} swapped their ${prop1.name} for ${to.name}'s ${prop2.name}.`);
+      this.actionCompleteSubject.next(true); // ✅ Only complete if no Say No
+    }
   }
+  
 
   private resetPropertySelection() {
     this.isPropertySelectableSubject.next(false);
@@ -608,24 +619,40 @@ export class GameService {
   }
 
   sayNo(useJustSayNo: boolean) {
-    const activePayment = this.isJustSayNoActiveSubject.value;
-    if (!useJustSayNo || !activePayment) return;
-  
-    const { from, to, amount } = activePayment;
-  
-    this.paymentQueue = this.paymentQueue.filter((p) => !(p.from === from && p.to === to && p.amount === amount));
-    this.paymentQueueSubject.next(this.paymentQueue);
-    
-    const justSayNoCard = from.hand.find(c => c.name === 'Just Say No');
-    from.hand = from.hand.filter(c => c !== justSayNoCard);
-    this.game.discard.push(justSayNoCard!);
-    this.discardSubject.next(this.game.discard);
+    if (this.isJustSayNoActiveSubject.value!.fromCards.length > 0 || this.isJustSayNoActiveSubject.value!.toCards.length > 0) {
+      let from = this.isJustSayNoActiveSubject.value!.from;
+      let to = this.isJustSayNoActiveSubject.value!.to;
+      let fromCards = this.isJustSayNoActiveSubject.value!.fromCards;
+      let toCards = this.isJustSayNoActiveSubject.value!.toCards;
 
+      from.properties = from.properties.filter(p => !toCards.includes(p));
+      to.properties = to.properties.filter(p => !fromCards.includes(p));
+
+      // Restore properties to original owners
+      from.properties.push(...fromCards as PropertyCard[]);
+      to.properties.push(...toCards as PropertyCard[]);
+      this.statusMessageSubject.next(`${from.name} just said no! The property change was reversed.`);
+      this.isJustSayNoActiveSubject.next(undefined);
+      
+    } else {
+      const activePayment = this.isJustSayNoActiveSubject.value;
+      if (!useJustSayNo || !activePayment) return;
+    
+      const { from, to, amount } = activePayment;
+    
+      this.paymentQueue = this.paymentQueue.filter((p) => !(p.from === from && p.to === to && p.amount === amount));
+      this.paymentQueueSubject.next(this.paymentQueue);
   
-    this.statusMessageSubject.next(`${from.name} just said no!`);
-  
-    this.isJustSayNoActiveSubject.next(undefined);
-    this.processNextPayment();
+      const justSayNoCard = from.hand.find(c => c.name === 'Just Say No');
+      from.hand = from.hand.filter(c => c !== justSayNoCard);
+      this.game.discard.push(justSayNoCard!);
+      this.discardSubject.next(this.game.discard);
+    
+      this.statusMessageSubject.next(`${from.name} just said no!`);
+    
+      this.isJustSayNoActiveSubject.next(undefined);
+      this.processNextPayment();
+    }
   }
 
 }
