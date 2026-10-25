@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 import { Game } from './classes/game';
-import { Player } from './classes/player';
+import { Player, PlayerSetup } from './classes/player';
+import { GameMove, PendingDecision } from './game-move';
 import { Card, PropertyCard } from './classes/card';
 import { CardService } from 'src/app/card.service';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
 import { COLOR_RENT_MAP } from './color-rent-map';
 
 export interface JustSayNoState {
@@ -30,6 +31,17 @@ export class GameService {
   public static cardsData: Card[] = require('../assets/cards.json');
   public discardAmount: number = 0;
   public winner: Player | null = null;
+  public paymentHistory: string[] = [];
+  public lastAiPlay: {
+    playerName: string;
+    card: Pick<Card, 'name' | 'imageName'>;
+    description: string;
+  } | null = null;
+
+  private recordPayment(message: string): void {
+    this.paymentHistory = [message, ...this.paymentHistory].slice(0, 8);
+  }
+  private resolvingCard = false;
 
   decisionState: 'playing' | 'paying' | null = null;
   selectedCard: Card | null = null;
@@ -103,7 +115,28 @@ export class GameService {
   private isJustSayNoActiveSubject = new BehaviorSubject<JustSayNoState | undefined>(undefined);
   isJustSayNoActive$ = this.isJustSayNoActiveSubject.asObservable();
 
-  setup(name: string, numberOfPlayers: number) {
+  readonly changes$ = new Subject<void>();
+  readonly resets$ = new Subject<void>();
+
+  setup(seats: PlayerSetup[]) {
+    if (seats.length < 2 || seats.length > 5 ||
+        !seats.some(seat => seat.control === 'human') ||
+        seats.some(seat => seat.control !== 'human' && seat.control !== 'ai')) {
+      throw new Error('Choose 2-5 players, including at least one human.');
+    }
+    this.resets$.next();
+    this.paymentHistory = [];
+    this.lastAiPlay = null;
+    this.paymentState = null;
+    this.paymentStateSubject.next(null);
+    this.selectedCard = null;
+    this.pendingBuildingCard = null;
+    this.isSelectingPropertySetForBuildingSubject.next(false);
+    this.buildingTypeSubject.next(null);
+    this.isDebtCollectorSelectableSubject.next(false);
+    this.selectedDebtPlayerSubject.next(null);
+    this.isDoubleTheRent = false;
+    this.actionCompleteSubject.next(false);
     this.winner = null;
     this.winnerSubject.next(null);
     this.discardAmount = 0;
@@ -115,12 +148,8 @@ export class GameService {
     this.resetPropertySelection();
     this.decisionState = 'playing';
 
-    const safeName = (name && name.trim()) ? name.trim() : 'Nino';
-    this.game.players = [];
-    const names = [safeName, 'Ariana', 'Bojan', 'Kemal', 'Myra'];
-    for (let i = 0; i < numberOfPlayers; i++) {
-      this.game.players.push(new Player(i + 1, names[i] || `Player ${i + 1}`));
-    }
+    this.game.players = seats.map((seat, i) =>
+      new Player(i + 1, seat.name.trim() || `Player ${i + 1}`, seat.control));
 
     this.propertySetSizeMap = new Map(
       this.propertySetSizes.map((p: { color: string; setSize: number }) => [p.color, p.setSize])
@@ -132,7 +161,7 @@ export class GameService {
     this.deckSubject.next(this.game.deck);
 
     this.draw(this.game.players[0], 7);
-    for (let i = 1; i < numberOfPlayers; i++) {
+    for (let i = 1; i < seats.length; i++) {
       this.draw(this.game.players[i], 5);
     }
 
@@ -141,6 +170,7 @@ export class GameService {
     this.currentPlayerSubject.next(this.game.players[0]);
     this.actionsSubject.next(3);
     this.statusMessageSubject.next(`Game started! ${this.currentPlayer.name}'s turn.`);
+    this.changes$.next();
   }
 
   decrementAction() {
@@ -150,13 +180,13 @@ export class GameService {
     const remaining = this.actionsSubject.value - 1;
     this.actionsSubject.next(remaining);
 
-    if (remaining <= 0) {
+    if (remaining <= 0 && !this.resolvingCard) {
       this.endTurn();
     }
   }
 
   endTurn() {
-    if (this.winner) return;
+    if (this.winner || !this.currentPlayer || this.hasPendingAction) return;
 
     const current = this.game.players[this.playerIndex];
 
@@ -187,6 +217,8 @@ export class GameService {
   }
 
   playCard(player: Player, card: Card) {
+    if (player !== this.currentPlayer || !player.hand.includes(card) || this.hasPendingAction) return;
+    if (!this.discardAmount && !this.canPlayCard(player, card)) return;
     if (this.winner) {
       this.statusMessageSubject.next(`Game over! ${this.winner.name} won! Please restart above.`);
       return;
@@ -194,6 +226,7 @@ export class GameService {
 
     // Discard mode (when hand > 7 at turn end)
     if (this.discardAmount > 0) {
+      this.recordPayment(`${player.name} discarded ${card.name} to meet the hand limit.`);
       this.game.discard.push(card);
       this.discardSubject.next(this.game.discard);
       const cardIdx = player.hand.indexOf(card);
@@ -228,6 +261,7 @@ export class GameService {
         const propCard = card as PropertyCard;
         player.properties.push(propCard);
         player.hand.splice(cardIndex, 1);
+        this.recordPayment(`${player.name} played ${propCard.name} (${this.getCurrentColor(propCard)}).`);
         this.statusMessageSubject.next(`${player.name} played ${propCard.name}.`);
         this.checkWinCondition(player);
         this.decrementAction();
@@ -236,20 +270,30 @@ export class GameService {
       case 'money': {
         player.bank.push(card);
         player.hand.splice(cardIndex, 1);
+        this.recordPayment(`${player.name} added ${card.value}M to their bank.`);
         this.statusMessageSubject.next(`${player.name} added ${card.value}M to bank.`);
         this.decrementAction();
         break;
       }
       case 'action': {
-        const success = this.playActionCard(card);
+        // Remove before an effect can draw, recycle discards, or advance the turn.
+        player.hand.splice(cardIndex, 1);
+        this.resolvingCard = true;
+        let success: boolean;
+        try {
+          success = this.resolveActionCard(card);
+        } finally {
+          this.resolvingCard = false;
+        }
         if (!success) {
+          player.hand.splice(cardIndex, 0, card);
           return;
         }
-        player.hand.splice(cardIndex, 1);
         if (card.name !== 'House' && card.name !== 'Hotel') {
           this.game.discard.push(card);
           this.discardSubject.next(this.game.discard);
         }
+        if (this.actions <= 0 && !this.hasPendingAction) this.endTurn();
         break;
       }
     }
@@ -270,6 +314,7 @@ export class GameService {
   }
 
   bankActionCard(player: Player, card: Card) {
+    if (!player.hand.includes(card) || this.hasPendingAction) return;
     if (this.winner) return;
     if (player.id !== this.game.players[this.playerIndex]?.id) {
       this.statusMessageSubject.next('Not your turn!');
@@ -286,6 +331,7 @@ export class GameService {
     if (card.type === 'action') {
       player.bank.push(card);
       player.hand = player.hand.filter(c => c !== card);
+      this.recordPayment(`${player.name} banked ${card.name} as ${card.value}M.`);
       this.statusMessageSubject.next(`${player.name} banked ${card.name} as ${card.value}M.`);
       this.decrementAction();
     }
@@ -307,10 +353,18 @@ export class GameService {
   }
 
   playActionCard(card: Card): boolean {
+    const player = this.currentPlayer;
+    if (!player || card.type !== 'action' || !this.canPlayCard(player, card)) return false;
+    this.playCard(player, card);
+    return true;
+  }
+
+  private resolveActionCard(card: Card): boolean {
     if (this.winner) return false;
 
     const currentPlayer = this.game.players[this.playerIndex];
     const otherPlayers = this.game.players.filter(p => p !== currentPlayer);
+    this.recordPayment(`${currentPlayer.name} played ${card.name}.`);
 
     switch (card.name) {
       case 'Pass Go':
@@ -330,6 +384,8 @@ export class GameService {
         otherPlayers.forEach(p => {
           if (this.getTotalPayableAmount(p) > 0) {
             this.paymentQueue.push({ from: p, to: currentPlayer, amount: 2 });
+          } else {
+            this.recordPayment(`${p.name} has no assets in play and pays nothing to ${currentPlayer.name} for Birthday.`);
           }
         });
 
@@ -435,7 +491,7 @@ export class GameService {
             ? ['red', 'orange', 'dark green', 'light green', 'black', 'dark blue', 'light blue', 'yellow', 'pink', 'brown']
             : name.split(' & ');
 
-          let ownedProperties = currentPlayer.properties.filter(p => colors.some(color => p.colors.includes(color)));
+          let ownedProperties = currentPlayer.properties.filter(p => colors.includes(this.getCurrentColor(p)));
 
           if (ownedProperties.length === 0) {
             this.statusMessageSubject.next(`You do not own any properties matching ${card.name}!`);
@@ -493,6 +549,7 @@ export class GameService {
   }
 
   selectDebtCollector(player: Player) {
+    if (!this.isLegalChoice({ type: 'debt', player })) return;
     if (this.winner) return;
 
     const currentPlayer = this.game.players[this.playerIndex];
@@ -515,11 +572,12 @@ export class GameService {
   }
 
   draw(player: Player, numberOfCards: number) {
-    if (numberOfCards > this.game.deck.length) {
+    if (numberOfCards > this.game.deck.length && this.game.discard.length > 0) {
       const recycled = this.shuffle([...this.game.discard]);
       this.game.deck = this.game.deck.concat(recycled);
       this.game.discard = [];
       this.discardSubject.next(this.game.discard);
+      this.recordPayment(`Shuffled ${recycled.length} discarded cards back into the draw pile.`);
     }
     let cards = this.game.deck.slice(0, numberOfCards);
     player.hand = player.hand.concat(cards);
@@ -531,7 +589,7 @@ export class GameService {
     let currentIndex = cards.length;
     while (currentIndex > 1) {
       currentIndex--;
-      let randomIndex = Math.floor(Math.random() * currentIndex);
+      let randomIndex = Math.floor(Math.random() * (currentIndex + 1));
       [cards[currentIndex], cards[randomIndex]] = [cards[randomIndex], cards[currentIndex]];
     }
     return cards;
@@ -546,12 +604,14 @@ export class GameService {
   }
 
   selectCardForPayment(player: Player, card: Card) {
+    if (this.pendingDecision?.player !== player || !this.isLegalChoice({ type: 'pay', card })) return;
     if (this.winner) return;
     if (!this.paymentQueue.length || this.paymentQueue[0].from !== player) return;
 
     let { from, to, amount } = this.paymentQueue[0];
     let cardValue = card.value || 0;
     let paid = false;
+    const destination = card.type === 'property' ? 'properties' : 'bank';
 
     if (from.bank.includes(card)) {
       from.bank = from.bank.filter(c => c !== card);
@@ -561,7 +621,7 @@ export class GameService {
       from.properties = from.properties.filter(c => c !== card);
       to.properties.push(card as PropertyCard);
       paid = true;
-    } else if (card.name === 'Hotel' || card.name === 'House') {
+    } else if (this.payableCards(from).includes(card)) {
       for (let property of from.properties) {
         if (property.buildings?.hotel === card) {
           property.buildings.hotel = null;
@@ -575,6 +635,7 @@ export class GameService {
     }
 
     if (paid) {
+      this.recordPayment(`${from.name} gave ${card.name} (${cardValue}M) to ${to.name}'s ${destination}.`);
       this.paymentQueue[0].amount -= cardValue;
       this.checkWinCondition(to);
       if (this.paymentQueue[0].amount <= 0 || this.getTotalPayableAmount(from) === 0) {
@@ -587,13 +648,13 @@ export class GameService {
         this.decisionState = 'paying';
       }
     }
-    this.resetPropertySelection();
   }
 
   processNextPayment() {
     while (this.paymentQueue.length && this.getTotalPayableAmount(this.paymentQueue[0].from) === 0) {
       const skipped = this.paymentQueue.shift();
       this.statusMessageSubject.next(`${skipped?.from.name} has nothing to pay.`);
+      if (skipped) this.recordPayment(`${skipped.from.name} has no assets in play and pays nothing to ${skipped.to.name}.`);
     }
 
     this.paymentQueueSubject.next(this.paymentQueue);
@@ -619,6 +680,7 @@ export class GameService {
       this.statusMessageSubject.next(null);
       this.isJustSayNoActiveSubject.next(undefined);
       this.decisionState = 'playing';
+      this.resetPropertySelection();
       this.actionCompleteSubject.next(true);
       this.decrementAction();
     }
@@ -627,10 +689,13 @@ export class GameService {
   getTotalPayableAmount(player: Player): number {
     let bankTotal = player.bank.reduce((sum, card) => sum + (card.value || 0), 0);
     let propertyTotal = player.properties.reduce((sum, card) => sum + (card.value || 0), 0);
-    return bankTotal + propertyTotal;
+    const buildingTotal = player.properties.reduce((sum, property) =>
+      sum + (property.buildings?.house?.value || 0) + (property.buildings?.hotel?.value || 0), 0);
+    return bankTotal + propertyTotal + buildingTotal;
   }
 
   selectTargetProperty(player: Player, property: PropertyCard) {
+    if (!this.isLegalChoice({ type: 'target', player, card: property })) return;
     if (this.winner) return;
     if (!this.isPropertySelectableSubject.value) return;
 
@@ -707,6 +772,7 @@ export class GameService {
   }
 
   selectOwnProperty(property: PropertyCard) {
+    if (!this.isLegalChoice({ type: 'swap', card: property })) return;
     if (this.winner) return;
     if (!this.isForcedDealActiveSubject.value || !this.selectedPropertySubject.value) return;
 
@@ -763,34 +829,16 @@ export class GameService {
   }
 
   flip(card: Card) {
-    if (this.winner) return;
-    const propertyCard = card as PropertyCard;
-    if (!propertyCard.currentColor) {
-      propertyCard.currentColor = propertyCard.colors[0];
-    }
-    propertyCard.currentColor = propertyCard.currentColor === propertyCard.colors[0] ? propertyCard.colors[1] : propertyCard.colors[0];
-
-    const colorInfo = COLOR_RENT_MAP.get(propertyCard.currentColor);
-    if (colorInfo) {
-      propertyCard.rentValues = colorInfo.rentValues;
-      propertyCard.setSize = colorInfo.setSize;
-    }
-    this.checkWinCondition(this.game.players[this.playerIndex]);
+    if (card.type !== 'property' || card.colors.length !== 2) return;
+    this.changeCurrentColor(card, card.colors.find(color => color !== this.getCurrentColor(card))!);
   }
 
   getCurrentColor(card: PropertyCard): string {
-    let name = card.name.toLowerCase();
-    if (/wildcard/.test(name)) {
-      if (!card.currentColor) {
-        card.currentColor = card.colors[0];
-      }
-      return card.currentColor;
-    } else {
-      return card.colors[0];
-    }
+    return card.currentColor && card.colors.includes(card.currentColor) ? card.currentColor : card.colors[0];
   }
 
   changeCurrentColor(card: Card, newColor: string) {
+    if (card.type !== 'property' || !this.canChangeColor(card) || !card.colors.includes(newColor)) return;
     if (this.winner) return;
     const propCard = card as PropertyCard;
     if (propCard.colors.includes(newColor)) {
@@ -805,6 +853,7 @@ export class GameService {
   }
 
   selectPropertySetForBuilding(property: PropertyCard) {
+    if (!this.isLegalChoice({ type: 'build', card: property })) return;
     if (this.winner) return;
 
     const currentPlayer = this.game.players[this.playerIndex];
@@ -852,10 +901,12 @@ export class GameService {
     this.isSelectingPropertySetForBuildingSubject.next(false);
     this.statusMessageSubject.next(`Added ${buildingType} to ${color} set!`);
     this.buildingTypeSubject.next(null);
+    this.resetPropertySelection();
     this.decrementAction();
   }
 
   sayNo(useJustSayNo: boolean) {
+    if (!this.isLegalChoice({ type: 'respond', useJustSayNo })) return;
     if (this.winner) return;
 
     const activeState = this.isJustSayNoActiveSubject.value;
@@ -871,7 +922,11 @@ export class GameService {
         this.discardSubject.next(this.game.discard);
       }
 
-      this.statusMessageSubject.next(`${from.name} played Just Say No! The action was cancelled.`);
+      const responseMessage = actionType === 'payment'
+        ? `${from.name} discarded Just Say No to cancel their ${amount}M payment to ${to.name}.`
+        : `${from.name} discarded Just Say No to block ${to.name}'s action.`;
+      this.statusMessageSubject.next(responseMessage);
+      this.recordPayment(responseMessage);
 
       if (actionType === 'payment') {
         this.paymentQueue = this.paymentQueue.filter(p => !(p.from === from && p.to === to && p.amount === amount));
@@ -917,6 +972,153 @@ export class GameService {
         this.decrementAction();
       }
     }
+  }
+
+  get hasPendingAction(): boolean {
+    return !!(this.isJustSayNoActiveSubject.value || this.paymentQueue.length ||
+      this.isDebtCollectorSelectableSubject.value || this.isPropertySelectableSubject.value ||
+      this.isSelectingPropertySetForBuildingSubject.value);
+  }
+
+  canChangeColor(card: PropertyCard): boolean {
+    return !this.winner && !this.hasPendingAction && !this.discardAmount &&
+      !!this.currentPlayer?.properties.includes(card) && card.colors.length > 1;
+  }
+
+  private isFullColor(player: Player, property: PropertyCard): boolean {
+    const color = this.getCurrentColor(property);
+    const size = this.propertySetSizeMap.get(color);
+    return !!size && player.properties.filter(p => this.getCurrentColor(p) === color).length >= size;
+  }
+
+  private targets(action: string): { player: Player; card: PropertyCard }[] {
+    if (!['Sly Deal', 'Forced Deal', 'Deal Breaker'].includes(action)) return [];
+    return this.game.players.filter(p => p !== this.currentPlayer).flatMap(player =>
+      player.properties.filter(card => action === 'Deal Breaker'
+        ? this.isFullColor(player, card) : !this.isFullColor(player, card))
+        .map(card => ({ player, card })));
+  }
+
+  private buildingTargets(name: string): PropertyCard[] {
+    const player = this.currentPlayer;
+    if (!player) return [];
+    return player.properties.filter((property, _index, properties) => {
+      const color = this.getCurrentColor(property);
+      if (color === 'black' || color === 'light green' || !this.isFullColor(player, property)) return false;
+      const set = properties.filter(p => this.getCurrentColor(p) === color);
+      // A single canonical property holds the buildings for each color.
+      if (set[0] !== property) return false;
+      return name === 'House' ? !property.buildings?.house
+        : name === 'Hotel' && !!property.buildings?.house && !property.buildings?.hotel;
+    });
+  }
+
+  payableCards(player: Player): Card[] {
+    return [...player.bank, ...player.properties, ...player.properties.flatMap(property =>
+      [property.buildings?.house, property.buildings?.hotel].filter((card): card is Card => !!card))];
+  }
+
+  canPlayCard(player: Player, card: Card): boolean {
+    if (this.winner || this.hasPendingAction || this.discardAmount || this.actions <= 0 ||
+        player !== this.currentPlayer || !player.hand.includes(card)) return false;
+    if (card.type !== 'action') return true;
+    switch (card.name) {
+      case 'Pass Go': case 'Double The Rent': case "It's My Birthday": return true;
+      case 'Debt Collector': return this.game.players.some(p => p !== player);
+      case 'Forced Deal': return player.properties.length > 0 && this.targets(card.name).length > 0;
+      case 'Sly Deal': case 'Deal Breaker': return this.targets(card.name).length > 0;
+      case 'House': case 'Hotel': return this.buildingTargets(card.name).length > 0;
+      default:
+        if (!/Rent/.test(card.name)) return false;
+        const colors = card.name.toLowerCase().replace('rent ', '');
+        return player.properties.some(p => colors === 'wildcard' || colors.split(' & ').includes(this.getCurrentColor(p)));
+    }
+  }
+
+  get pendingDecision(): PendingDecision | null {
+    const player = this.currentPlayer;
+    if (this.winner || !player) return null;
+    const response = this.isJustSayNoActiveSubject.value;
+    if (response) return { type: 'response', player: response.from, choices: [
+      { type: 'respond', useJustSayNo: false },
+      ...(this.playerHasJustSayNo(response.from) ? [{ type: 'respond' as const, useJustSayNo: true }] : [])
+    ] };
+    if (this.paymentQueue.length) {
+      const payer = this.paymentQueue[0].from;
+      return { type: 'payment', player: payer, choices: this.payableCards(payer).map(card => ({ type: 'pay', card })) };
+    }
+    if (this.discardAmount) return { type: 'discard', player,
+      choices: player.hand.map(card => ({ type: 'discard', card })) };
+    if (this.isDebtCollectorSelectableSubject.value) return { type: 'debt', player,
+      choices: this.game.players.filter(p => p !== player).map(player => ({ type: 'debt', player })) };
+    if (this.isSelectingPropertySetForBuildingSubject.value) return { type: 'building', player,
+      choices: this.buildingTargets(this.buildingTypeSubject.value || '').map(card => ({ type: 'build', card })) };
+    if (this.isPropertySelectableSubject.value) {
+      if (this.currentActionCard?.name === 'Forced Deal' &&
+          this.isForcedDealActiveSubject.value && this.selectedPropertySubject.value) return {
+        type: 'swap', player, choices: player.properties.map(card => ({ type: 'swap', card })) };
+      return { type: 'target', player, choices: this.targets(this.currentActionCard?.name || '')
+        .map(target => ({ type: 'target', ...target })) };
+    }
+    const choices: GameMove[] = [];
+    for (const card of player.hand) {
+      if (this.canPlayCard(player, card)) choices.push({ type: 'play', card });
+      if (card.type === 'action' && this.actions > 0) choices.push({ type: 'bank', card });
+    }
+    choices.push({ type: 'pass' });
+    return { type: 'turn', player, choices };
+  }
+
+  isLegalChoice(move: GameMove): boolean {
+    if (move.type === 'play' && move.color !== undefined &&
+        (move.card.type !== 'property' || !move.card.colors.includes(move.color))) return false;
+    if (move.type === 'color') return this.canChangeColor(move.card) && move.card.colors.includes(move.color);
+    return !!this.pendingDecision?.choices.some(choice => choice.type === move.type &&
+      (!('card' in move) || ('card' in choice && choice.card === move.card)) &&
+      (!('player' in move) || ('player' in choice && choice.player === move.player)) &&
+      (!('useJustSayNo' in move) || ('useJustSayNo' in choice && choice.useJustSayNo === move.useJustSayNo)));
+  }
+
+  /** Both UI and AI submit decisions through the same validation boundary. */
+  executeMove(move: GameMove, source: 'human' | 'ai' = 'human'): boolean {
+    const decision = this.pendingDecision;
+    if (!decision || decision.player.control !== source || !this.isLegalChoice(move)) return false;
+    const player = decision.player;
+    if (source === 'ai') {
+      const card = move.type === 'play' || move.type === 'bank' ? move.card
+        : move.type === 'respond' && move.useJustSayNo ? player.hand.find(card => card.name === 'Just Say No') : undefined;
+      if (card) this.lastAiPlay = {
+        playerName: player.name,
+        card: { name: card.name, imageName: card.imageName },
+        description: move.type === 'bank' ? `Banked as ${card.value}M` : 'Played'
+      };
+    }
+    switch (move.type) {
+      case 'play':
+        if (move.card.type === 'property') {
+          const color = move.color || this.getCurrentColor(move.card);
+          move.card.currentColor = color;
+          const info = COLOR_RENT_MAP.get(color);
+          if (info) { move.card.rentValues = info.rentValues; move.card.setSize = info.setSize; }
+        }
+        this.playCard(player, move.card);
+        break;
+      case 'discard': this.playCard(player, move.card); break;
+      case 'bank': this.bankActionCard(player, move.card); break;
+      case 'pay': this.selectCardForPayment(player, move.card); break;
+      case 'target': this.selectTargetProperty(move.player, move.card); break;
+      case 'swap': this.selectOwnProperty(move.card); break;
+      case 'build': this.selectPropertySetForBuilding(move.card); break;
+      case 'debt': this.selectDebtCollector(move.player); break;
+      case 'respond': this.sayNo(move.useJustSayNo); break;
+      case 'pass':
+        this.recordPayment(`${player.name} passed their turn.`);
+        this.endTurn();
+        break;
+      case 'color': this.changeCurrentColor(move.card, move.color); break;
+    }
+    this.changes$.next();
+    return true;
   }
 
 }

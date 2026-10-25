@@ -1,20 +1,32 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { GameService } from '../game.service';
-import { Player } from '../classes/player';
+import { Player, PlayerSetup } from '../classes/player';
+import { RandomAiService } from '../random-ai.service';
+import { GameMove } from '../game-move';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { Card, PropertyCard } from '../classes/card';
 import confetti from 'canvas-confetti';
 
 @Component({
   selector: 'app-play',
+  providers: [RandomAiService],
   templateUrl: './play.component.html',
   styleUrls: ['./play.component.css']
 })
-export class PlayComponent implements OnInit {
+export class PlayComponent implements OnInit, OnDestroy {
 
-  constructor(public gameService: GameService) { }
+  constructor(public gameService: GameService, private ai: RandomAiService) { }
 
   public numberOfPlayers: number = 3;
-  public name: string = "Nino";
+  public seats: PlayerSetup[] = [
+    { name: 'Nino', control: 'human' }, { name: 'Ariana', control: 'human' },
+    { name: 'Bojan', control: 'human' }, { name: 'Kemal', control: 'human' },
+    { name: 'Myra', control: 'human' }
+  ];
+  setupError: string | null = null;
+  private destroyed$ = new Subject<void>();
+  private confettiTimer: ReturnType<typeof setInterval> | undefined;
   public start = false;
   public players: Player[] = [];
   public deck: Card[] = [];
@@ -23,6 +35,7 @@ export class PlayComponent implements OnInit {
   public currentPlayer: Player | undefined;
   public actions: number = 3;
   public winner: Player | null = null;
+  public victoryDismissed = false;
 
   public from: Player | undefined;
   public to: Player | undefined;
@@ -47,30 +60,31 @@ export class PlayComponent implements OnInit {
   
   ngOnInit(): void {
 
-    this.gameService.deck$.subscribe(deck => {
+    this.gameService.deck$.pipe(takeUntil(this.destroyed$)).subscribe(deck => {
       this.deck = deck;
     });
 
-    this.gameService.discard$.subscribe(discard => {
+    this.gameService.discard$.pipe(takeUntil(this.destroyed$)).subscribe(discard => {
       this.discard = discard;
     });
 
-    this.gameService.currentPlayer$.subscribe(player => {
+    this.gameService.currentPlayer$.pipe(takeUntil(this.destroyed$)).subscribe(player => {
       this.currentPlayer = player;
     });
 
-    this.gameService.actions$.subscribe(actions => {
+    this.gameService.actions$.pipe(takeUntil(this.destroyed$)).subscribe(actions => {
       this.actions = actions;
     });
 
-    this.gameService.winner$.subscribe(winner => {
+    this.gameService.winner$.pipe(takeUntil(this.destroyed$)).subscribe(winner => {
       this.winner = winner;
+      this.victoryDismissed = false;
       if (winner) {
         this.triggerVictoryConfetti();
       }
     });
 
-    this.gameService.paymentQueue$.subscribe(queue => {
+    this.gameService.paymentQueue$.pipe(takeUntil(this.destroyed$)).subscribe(queue => {
       if (queue.length) {
         this.from = queue[0].from;
         this.to = queue[0].to;
@@ -81,44 +95,52 @@ export class PlayComponent implements OnInit {
       }
     });
 
-    this.gameService.statusMessage$.subscribe(msg => {
+    this.gameService.statusMessage$.pipe(takeUntil(this.destroyed$)).subscribe(msg => {
       this.statusMessage = msg;
     });
 
-    this.gameService.isDebtCollectorSelectable$.subscribe(isSelectable => {
+    this.gameService.isDebtCollectorSelectable$.pipe(takeUntil(this.destroyed$)).subscribe(isSelectable => {
       this.isDebtCollectorSelectable = isSelectable;
     });
 
-    this.gameService.selectedDebtPlayer$.subscribe(player => {
+    this.gameService.selectedDebtPlayer$.pipe(takeUntil(this.destroyed$)).subscribe(player => {
       this.selectedDebtPlayer = player;
     });
 
-    this.gameService.propertySelectable$.subscribe(isSelectable => {
+    this.gameService.propertySelectable$.pipe(takeUntil(this.destroyed$)).subscribe(isSelectable => {
       this.isPropertySelectable = isSelectable;
     });
 
-    this.gameService.forcedDealActive$.subscribe(isActive => {
+    this.gameService.forcedDealActive$.pipe(takeUntil(this.destroyed$)).subscribe(isActive => {
       this.isForcedDealActive = isActive;
     });
 
-    this.gameService.selectedProperty$.subscribe(property => {
+    this.gameService.selectedProperty$.pipe(takeUntil(this.destroyed$)).subscribe(property => {
       this.selectedProperty = property;
     });
 
-    this.gameService.isSelectingPropertySetForBuilding$.subscribe(isSelecting => {
+    this.gameService.isSelectingPropertySetForBuilding$.pipe(takeUntil(this.destroyed$)).subscribe(isSelecting => {
       this.isSelectingPropertySetForBuilding = isSelecting;
     });
     
-    this.gameService.buildingType$.subscribe(type => {
+    this.gameService.buildingType$.pipe(takeUntil(this.destroyed$)).subscribe(type => {
       this.buildingType = type;
     });
 
-    this.gameService.isJustSayNoActive$.subscribe(activeState => {
+    this.gameService.isJustSayNoActive$.pipe(takeUntil(this.destroyed$)).subscribe(activeState => {
       this.targetPlayerForJustSayNo = activeState?.from ?? null;
     });
 
     // Automatically initialize game on first load so the user lands on a fully ready game!
     this.setup();
+    this.ai.start();
+  }
+
+  ngOnDestroy(): void {
+    this.ai.stop();
+    this.destroyed$.next();
+    this.destroyed$.complete();
+    if (this.confettiTimer !== undefined) clearInterval(this.confettiTimer);
   }
 
   fireConfetti(options?: any) {
@@ -133,10 +155,11 @@ export class PlayComponent implements OnInit {
     const animationEnd = Date.now() + duration;
     const colors = ['#bb0000', '#ffffff', '#00bb00', '#0000bb', '#ffd700'];
 
-    const interval: any = setInterval(() => {
+    if (this.confettiTimer !== undefined) clearInterval(this.confettiTimer);
+    this.confettiTimer = setInterval(() => {
       const timeLeft = animationEnd - Date.now();
       if (timeLeft <= 0) {
-        return clearInterval(interval);
+        return clearInterval(this.confettiTimer);
       }
       const particleCount = 40 * (timeLeft / duration);
       this.fireConfetti({
@@ -157,8 +180,18 @@ export class PlayComponent implements OnInit {
   }
 
   setup() {
-    this.name = (this.name && this.name.trim()) ? this.name.trim() : 'Nino';
-    this.gameService.setup(this.name, this.numberOfPlayers);
+    if (!Number.isInteger(this.numberOfPlayers) || this.numberOfPlayers < 2 || this.numberOfPlayers > 5) {
+      this.setupError = 'Choose between 2 and 5 players.';
+      return;
+    }
+    try {
+      this.gameService.setup(this.seats.slice(0, this.numberOfPlayers));
+    } catch (error) {
+      this.setupError = error instanceof Error ? error.message : 'Invalid player setup.';
+      return;
+    }
+    this.setupError = null;
+    if (this.confettiTimer !== undefined) clearInterval(this.confettiTimer);
     this.players = this.gameService.game.players;
     this.currentPlayer = this.gameService.currentPlayer;
     this.deck = this.gameService.game.deck;
@@ -170,39 +203,86 @@ export class PlayComponent implements OnInit {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  playCard(player: Player, card: Card) {
-    if (this.winner) return;
-    if (player.id !== this.currentPlayer?.id) {
-      console.log("not your turn");
-      return;
-    }
-    this.gameService.playCard(player, card);
+  closeVictory(): void {
+    this.victoryDismissed = true;
+    if (this.confettiTimer !== undefined) clearInterval(this.confettiTimer);
   }
 
-  pay() {
-    if (this.winner) return;
-    if (!this.from || !this.to || !this.amount) return;
-    this.statusMessage = this.gameService.pay(this.from, this.to, this.amount);
-    this.decisionState = "paying";
+  get humanDecision(): boolean {
+    return this.gameService.pendingDecision?.player.control === 'human';
   }
-  
-  selectCard(player: Player, card: Card) {
-    if (this.winner) return;
-    if (this.decisionState === 'paying') {
-      this.gameService.selectCardForPayment(player, card);
-    } else if (this.isPropertySelectable && card.type === 'property') {
-      if (!this.selectedProperty) {
-        this.gameService.selectTargetProperty(player, card as PropertyCard);
-      } else if (this.isForcedDealActive && player === this.currentPlayer) {
-        this.gameService.selectOwnProperty(card as PropertyCard);
-      }
-    } else if (this.isSelectingPropertySetForBuilding && player === this.currentPlayer && card.type === 'property') {
-      this.gameService.selectPropertySetForBuilding(card as PropertyCard);
+
+  get aiThinking(): boolean {
+    return this.gameService.pendingDecision?.player.control === 'ai';
+  }
+
+  get displayStatusMessage(): string | null | undefined {
+    const decision = this.gameService.pendingDecision;
+    const attacker = this.currentPlayer;
+    if (decision?.type === 'response' && decision.player.control === 'ai' && attacker?.control === 'ai') {
+      return `${decision.player.name} is responding to ${attacker.name}'s action.`;
     }
+    return this.statusMessage;
+  }
+
+  get humanPayment() {
+    return this.humanDecision && this.gameService.pendingDecision?.type === 'payment'
+      ? this.gameService.paymentQueue[0] : null;
+  }
+
+  get paymentChoices(): Card[] {
+    if (!this.humanPayment) return [];
+    return this.gameService.pendingDecision!.choices.flatMap(move => move.type === 'pay' ? [move.card] : []);
+  }
+
+  get awaitingHumanResponse(): boolean {
+    return this.humanDecision && this.gameService.pendingDecision?.type === 'response';
+  }
+
+  paymentSource(card: Card): string {
+    return this.humanPayment?.from.bank.includes(card) ? 'Bank'
+      : card.type === 'property' ? 'Property' : 'Building';
+  }
+
+  choosePayment(card: Card): void {
+    this.gameService.executeMove({ type: 'pay', card });
+  }
+
+  canMove(move: GameMove): boolean {
+    return this.humanDecision && this.gameService.isLegalChoice(move);
+  }
+
+  handVisible(player: Player): boolean {
+    return player.control === 'human' && player === this.currentPlayer;
+  }
+
+  canChangeColor(card: PropertyCard): boolean {
+    return this.humanDecision && this.gameService.canChangeColor(card);
+  }
+
+  playCard(player: Player, card: Card) {
+    if (player !== this.currentPlayer) return;
+    this.gameService.executeMove({ type: this.gameService.discardAmount ? 'discard' : 'play', card });
+  }
+
+  selectCard(player: Player, card: Card) {
+    const decision = this.gameService.pendingDecision;
+    if (!decision || !this.humanDecision) return;
+    let move: GameMove | undefined;
+    if (decision.type === 'payment' && decision.player === player) move = { type: 'pay', card };
+    if (card.type === 'property') {
+      if (decision.type === 'target') move = { type: 'target', player, card };
+      if (decision.type === 'swap' && player === this.currentPlayer) move = { type: 'swap', card };
+      if (decision.type === 'building' && player === this.currentPlayer) {
+        move = decision.choices.find(choice => choice.type === 'build' &&
+          this.gameService.getCurrentColor(choice.card) === this.gameService.getCurrentColor(card));
+      }
+    }
+    if (move) this.gameService.executeMove(move);
   }
 
   sortProperties(player: Player) {
-    return player.properties.sort((a, b) => this.gameService.getCurrentColor(a).localeCompare(this.gameService.getCurrentColor(b)));
+    return [...player.properties].sort((a, b) => this.gameService.getCurrentColor(a).localeCompare(this.gameService.getCurrentColor(b)));
   }
 
   getTotalPayableAmount(player: Player): number {
@@ -213,7 +293,7 @@ export class PlayComponent implements OnInit {
 
   endTurn() {
     if (this.winner) return;
-    this.gameService.endTurn();
+    this.gameService.executeMove({ type: 'pass' });
   }
 
   getBankTotal(player: Player): number {
@@ -225,38 +305,22 @@ export class PlayComponent implements OnInit {
   }
 
   addToBank(player: Player, card: Card) {
-    if (this.winner) return;
-    if (player.id !== this.currentPlayer?.id) {
-      console.log("not your turn");
-      return;
-    }
-    this.gameService.bankActionCard(player, card);
+    if (player === this.currentPlayer) this.gameService.executeMove({ type: 'bank', card });
   }
 
   selectDebtCollector(player: Player) {
-    if (this.winner) return;
-    this.gameService.selectDebtCollector(player);
-  }
-
-  selectTargetProperty(player: Player, property: PropertyCard) {
-    if (this.winner) return;
-    this.gameService.selectTargetProperty(player, property);
-  }
-
-  selectOwnProperty(property: PropertyCard) {
-    if (this.winner) return;
-    this.gameService.selectOwnProperty(property);
+    this.gameService.executeMove({ type: 'debt', player });
   }
 
   flip(card: Card) {
-    if (this.winner) return;
-    this.gameService.flip(card);
+    if (card.type !== 'property' || card.colors.length !== 2) return;
+    const color = card.colors.find(color => color !== this.gameService.getCurrentColor(card));
+    if (color) this.changeColor(card, color);
   }
 
   isFlipped(card: Card) {
     const propertyCard = card as PropertyCard;
-    propertyCard.currentColor ??= propertyCard.colors[0];
-    return propertyCard.currentColor === propertyCard.colors[1];
+    return this.gameService.getCurrentColor(propertyCard) === propertyCard.colors[1];
   }
 
   isWildcard(card: Card) {
@@ -272,11 +336,11 @@ export class PlayComponent implements OnInit {
   
   changeColor(card: Card, color: string) {
     if (this.winner) return;
-    this.gameService.changeCurrentColor(card, color);
+    if (card.type === 'property') this.gameService.executeMove({ type: 'color', card, color });
   }
 
   sayNo(useJustSayNo: boolean) {
     if (this.winner) return;
-    this.gameService.sayNo(useJustSayNo);
+    this.gameService.executeMove({ type: 'respond', useJustSayNo });
   }
 }

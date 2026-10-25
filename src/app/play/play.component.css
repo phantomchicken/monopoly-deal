@@ -4,6 +4,29 @@
   background: linear-gradient(180deg, #eef2f6 0%, #e2e8f0 100%);
 }
 
+.human-decision-panel {
+  position: sticky;
+  top: 80px;
+  z-index: 1030;
+}
+
+.payment-choices {
+  max-height: 30vh;
+  overflow-y: auto;
+}
+
+.payment-choice {
+  display: inline-flex;
+  align-items: center;
+  text-align: left;
+}
+
+.payment-image {
+  width: 40px;
+  height: 56px;
+  object-fit: contain;
+}
+
 /* Victory Overlay */
 .victory-overlay {
   position: fixed;
@@ -52,12 +75,35 @@
 }
 
 /* Center Deck Table */
+.table-overview {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.move-log ul {
+  max-height: 220px;
+  overflow-y: auto;
+  padding-left: 20px;
+}
+
+.move-log li + li {
+  margin-top: 6px;
+}
+
+@media (max-width: 767px) {
+  .table-overview {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+}
+
 .deck-table {
   background: rgba(255, 255, 255, 0.85);
   border: 1px solid #cbd5e1;
   border-radius: 16px;
-  max-width: 480px;
-  margin: 0 auto;
+  width: 100%;
 }
 
 .pile-card-wrapper {
@@ -289,9 +335,22 @@
 /* Status Notification Banner */
 .status-banner {
   z-index: 1050;
-  min-width: 380px;
-  max-width: 90vw;
+  width: max-content;
+  max-width: min(620px, calc(100vw - 24px));
+  border-radius: 18px;
   animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.status-card-preview {
+  width: 44px;
+  height: 64px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.status-content {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 @keyframes slideUp {

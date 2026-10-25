@@ -1,7 +1,8 @@
 <div class="game-wrapper py-3">
     <!-- Victory Overlay (Game Locked) -->
-    <div *ngIf="winner" class="victory-overlay">
-        <div class="victory-card text-center shadow-lg p-5">
+    <div *ngIf="winner && !victoryDismissed" class="victory-overlay" role="dialog" aria-modal="true" aria-label="Game result">
+        <div class="victory-card position-relative text-center shadow-lg p-5">
+            <button type="button" class="btn-close position-absolute top-0 end-0 m-3" aria-label="Close victory popup and view board" (click)="closeVictory()"></button>
             <div class="trophy-bounce display-1 mb-2">🏆</div>
             <h1 class="display-5 fw-bold text-success mb-2">{{ winner.name }} Wins!</h1>
             <p class="lead text-muted mb-4">Completed 3 full property sets and dominated Monopoly Deal!</p>
@@ -22,12 +23,18 @@
             <div class="card-body p-3">
                 <div class="row g-2 align-items-center justify-content-center">
                     <div class="col-auto">
-                        <label class="fw-semibold text-muted small d-block">YOUR NAME</label>
-                        <input type="text" class="form-control form-control-sm" [(ngModel)]="name" placeholder="Name" autocomplete="off">
+                        <label for="player-count" class="fw-semibold text-muted small d-block">PLAYERS (2-5)</label>
+                        <select id="player-count" class="form-select form-select-sm" [(ngModel)]="numberOfPlayers">
+                            <option *ngFor="let count of [2, 3, 4, 5]" [ngValue]="count">{{ count }}</option>
+                        </select>
                     </div>
-                    <div class="col-auto">
-                        <label class="fw-semibold text-muted small d-block">PLAYERS (2-5)</label>
-                        <input type="number" class="form-control form-control-sm" [(ngModel)]="numberOfPlayers" min="2" max="5">
+                    <div class="col-auto" *ngFor="let seat of seats.slice(0, numberOfPlayers); let i = index">
+                        <label [for]="'seat-name-' + i" class="fw-semibold text-muted small d-block">PLAYER {{ i + 1 }}</label>
+                        <input [id]="'seat-name-' + i" class="form-control form-control-sm mb-1" [(ngModel)]="seat.name" placeholder="Name" autocomplete="off">
+                        <select [attr.aria-label]="'Player ' + (i + 1) + ' control'" class="form-select form-select-sm" [(ngModel)]="seat.control">
+                            <option value="human">Human (hotseat)</option>
+                            <option value="ai">Simple AI</option>
+                        </select>
                     </div>
                     <div class="col-auto align-self-end">
                         <button type="button" class="btn btn-primary btn-sm px-4 fw-semibold shadow-sm" (click)="setup()">
@@ -35,12 +42,24 @@
                         </button>
                     </div>
                 </div>
+                <p *ngIf="setupError" role="alert" class="text-danger small mt-2 mb-0">{{ setupError }}</p>
+                <p class="text-muted small text-center mt-2 mb-0">Choose Human for hotseat, or mix humans and AI. Everyone plays individually. Changes apply on restart.</p>
             </div>
         </div>
     </div>
 
-    <!-- Deck & Discard Center Table Area -->
+    <!-- Move log and draw/discard piles -->
     <div class="container mb-4" *ngIf="start">
+        <div class="table-overview">
+            <section class="card border-0 shadow-sm move-log" aria-label="Move log">
+                <div class="card-body">
+                    <h6 class="fw-bold">Move log <small class="text-muted">(newest first)</small></h6>
+                    <ul *ngIf="gameService.paymentHistory.length; else emptyMoveLog" class="mb-0 small" aria-live="polite" aria-relevant="additions text">
+                        <li *ngFor="let receipt of gameService.paymentHistory">{{ receipt }}</li>
+                    </ul>
+                    <ng-template #emptyMoveLog><p class="small text-muted mb-0">Actions and payments will appear here.</p></ng-template>
+                </div>
+            </section>
         <div class="deck-table p-3 rounded shadow-sm text-center">
             <div class="d-flex justify-content-center align-items-center gap-5">
                 <!-- Draw Pile -->
@@ -67,17 +86,50 @@
                 </div>
             </div>
         </div>
+
+        </div>
     </div>
 
-    <!-- Floating Status & Interactive Prompt Bar -->
-    <div *ngIf="statusMessage" class="status-banner position-fixed bottom-0 start-50 translate-middle-x mb-5 p-3 rounded-pill shadow-lg text-center bg-dark text-white">
-        <div class="d-flex align-items-center justify-content-center gap-3 px-3">
-            <span class="fs-6">{{ statusMessage }}</span>
-            <div *ngIf="targetPlayerForJustSayNo" class="d-inline-flex gap-2">
-                <button type="button" class="btn btn-danger btn-sm px-3 fw-bold" (click)="sayNo(true)">🛡️ Say No</button>
-                <button type="button" class="btn btn-outline-light btn-sm px-3" (click)="sayNo(false)">Accept</button>
+    <!-- Floating status and latest AI card -->
+    <div *ngIf="displayStatusMessage || gameService.lastAiPlay" class="status-banner position-fixed bottom-0 start-50 translate-middle-x mb-5 p-3 shadow-lg bg-dark text-white" role="status">
+        <div class="d-flex align-items-center gap-3">
+            <img *ngIf="gameService.lastAiPlay as play" [src]="'assets/' + play.card.imageName"
+                 [alt]="play.card.name" class="status-card-preview rounded shadow-sm">
+            <div class="status-content">
+                <div *ngIf="gameService.lastAiPlay as play" class="small text-white-50 mb-1">
+                    {{ play.playerName }}: {{ play.description }} {{ play.card.name }}
+                </div>
+                <div *ngIf="displayStatusMessage">{{ displayStatusMessage }}</div>
             </div>
         </div>
+    </div>
+
+    <div *ngIf="awaitingHumanResponse || humanPayment" class="container human-decision-panel mb-4" aria-live="polite">
+        <section class="card border-primary shadow" aria-label="Your response">
+            <div class="card-body">
+                <ng-container *ngIf="awaitingHumanResponse">
+                    <h5 class="fw-bold">{{ gameService.pendingDecision?.player?.name }}, choose your response</h5>
+                    <p>{{ statusMessage }}</p>
+                    <p class="small text-muted">The AI is paused until you respond. Accepting a payment request lets you choose which assets to pay.</p>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button type="button" class="btn btn-danger" (click)="sayNo(true)">Play Just Say No</button>
+                        <button type="button" class="btn btn-primary" (click)="sayNo(false)">Accept action</button>
+                    </div>
+                </ng-container>
+                <ng-container *ngIf="humanPayment as payment">
+                    <h5 class="fw-bold">{{ payment.from.name }}, choose how to pay {{ payment.to.name }}</h5>
+                    <p class="mb-1"><strong>{{ payment.amount }}M remaining.</strong> Select one of your assets below to pay it.</p>
+                    <p class="small text-muted">Use your bank, properties, or buildings in play. Cards in your hand cannot pay. No change is given for overpayment. The AI waits for you.</p>
+                    <div class="d-flex flex-wrap gap-2 payment-choices" aria-label="Assets available for payment">
+                        <button *ngFor="let card of paymentChoices" type="button" class="btn btn-outline-primary payment-choice"
+                                (click)="choosePayment(card)" [attr.aria-label]="'Pay ' + card.name + ' (' + card.value + 'M) from ' + paymentSource(card)">
+                            <img [src]="'assets/' + card.imageName" alt="" class="payment-image me-2">
+                            <span>{{ card.name }} ({{ card.value }}M)<small class="d-block">{{ paymentSource(card) }}</small></span>
+                        </button>
+                    </div>
+                </ng-container>
+            </div>
+        </section>
     </div>
 
     <!-- Main Game Arena -->
@@ -93,10 +145,11 @@
                                 <h4 class="mb-0 fw-bold">
                                     <span (click)="selectDebtCollector(player)" 
                                           class="player-name-badge" 
-                                          [ngClass]="{ 'clickable-debt': isDebtCollectorSelectable && player.id !== currentPlayer?.id }">
+                                          [ngClass]="{ 'clickable-debt': canMove({ type: 'debt', player: player }) }">
                                         👤 {{ player.name }}
                                     </span>
                                 </h4>
+                                <span *ngIf="player.control === 'ai'" class="badge bg-primary">Simple AI</span>
                                 <span *ngIf="player.id === currentPlayer?.id && !winner" class="badge bg-success turn-pill animate-pulse">
                                     ⚡ Active Turn
                                 </span>
@@ -129,14 +182,14 @@
                                     <div class="d-flex flex-wrap gap-2 cards-lane">
                                         <div *ngFor="let card of player.hand" class="card-slot">
                                             <div class="card-container">
-                                                <img [src]="player.id === currentPlayer?.id ? 'assets/' + card.imageName : 'assets/facedown.jpg'" 
-                                                     [alt]="card.name" 
+                                                <img [src]="handVisible(player) ? 'assets/' + card.imageName : 'assets/facedown.jpg'" 
+                                                     [alt]="handVisible(player) ? card.name : 'Hidden Card'" 
                                                      class="card-img rounded shadow-sm" 
-                                                     [ngClass]="{'disabled-card': winner || player.id !== currentPlayer?.id}"
+                                                     [ngClass]="{'disabled-card': player !== currentPlayer || !canMove({ type: gameService.discardAmount ? 'discard' : 'play', card: card })}"
                                                      (click)="playCard(player, card)"
-                                                     [title]="player.id === currentPlayer?.id ? card.name : 'Hidden Card'">
+                                                     [title]="handVisible(player) ? card.name : 'Hidden Card'">
                                                 <!-- Action Card Bank Dollar Icon -->
-                                                <div *ngIf="card.type === 'action' && player.id === currentPlayer?.id && !winner" 
+                                                <div *ngIf="player === currentPlayer && canMove({ type: 'bank', card: card })" 
                                                      class="floating-dollar shadow-sm" 
                                                      (click)="addToBank(player, card)" 
                                                      title="Bank as {{card.value}}M cash">
@@ -178,7 +231,7 @@
                                                 </div>
 
                                                 <!-- Dual Wildcard Flip Button -->
-                                                <div *ngIf="isWildcard(prop) && player.id === currentPlayer?.id && !winner" 
+                                                <div *ngIf="isWildcard(prop) && canChangeColor(prop)" 
                                                      class="wildcard-flip-btn shadow-sm" 
                                                      (click)="flip(prop)" 
                                                      title="Flip Wildcard color">
@@ -186,10 +239,10 @@
                                                 </div>
 
                                                 <!-- Multi-Color Wildcard Selector -->
-                                                <div *ngIf="isWildcardProper(prop) && player.id === currentPlayer?.id && !winner" class="mt-1">
+                                                <div *ngIf="isWildcardProper(prop) && canChangeColor(prop)" class="mt-1">
                                                     <select class="form-select form-select-sm color-select" 
-                                                            [(ngModel)]="prop.currentColor" 
-                                                            (change)="changeColor(prop, prop.currentColor)">
+                                                            [ngModel]="gameService.getCurrentColor(prop)"
+                                                            (ngModelChange)="changeColor(prop, $event)">
                                                         <option *ngFor="let color of prop.colors" [value]="color">
                                                             {{ color | titlecase }}
                                                         </option>
@@ -231,6 +284,15 @@
 
     <!-- Floating Current Turn Action Dock (Bottom-Right) -->
     <div *ngIf="start && !winner && currentPlayer" class="action-dock position-fixed bottom-0 end-0 m-4 p-3 rounded-4 shadow-lg bg-white border">
+        <div *ngIf="gameService.hasPendingAction && gameService.currentActionCard as action" class="mb-2">
+            <strong>{{ currentPlayer.name }} played {{ action.name }}</strong>
+            <div *ngIf="gameService.pendingDecision?.type === 'payment' || (gameService.pendingDecision?.type === 'response' && gameService.paymentQueue.length)" class="small text-muted">
+                {{ gameService.pendingDecision?.player?.name }} chooses their own payment.
+            </div>
+        </div>
+        <div *ngIf="aiThinking" class="small text-primary mb-2" role="status">{{ gameService.pendingDecision?.player?.name }} is thinking...</div>
+        <div *ngIf="awaitingHumanResponse || humanPayment" class="small text-primary mb-2" role="status">Waiting for {{ gameService.pendingDecision?.player?.name }}'s response</div>
+        <div *ngIf="gameService.discardAmount" class="small text-danger mb-2">Discard {{ gameService.discardAmount }} card(s) to end the turn.</div>
         <div class="d-flex align-items-center gap-3">
             <div class="text-end">
                 <div class="fw-bold text-dark">{{ currentPlayer.name }}</div>
@@ -242,7 +304,7 @@
                     </span>
                 </div>
             </div>
-            <button class="btn btn-danger btn-lg px-4 fw-bold pass-btn shadow" (click)="endTurn()">
+            <button class="btn btn-danger btn-lg px-4 fw-bold pass-btn shadow" [disabled]="!canMove({ type: 'pass' })" (click)="endTurn()">
                 Pass ⏩
             </button>
         </div>
