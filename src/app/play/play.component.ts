@@ -10,21 +10,21 @@ import { Card, PropertyCard } from '../classes/card';
 })
 export class PlayComponent implements OnInit {
 
-  constructor(private gameService: GameService) { }
+  constructor(public gameService: GameService) { }
 
-  public numberOfPlayers:number = 3;
-  public name:string = "Nino";
+  public numberOfPlayers: number = 3;
+  public name: string = "Nino";
   public start = false;
-  public players:Player[] = [];
-  public deck:Card[] = [];
-  public discard:Card[] = [];
+  public players: Player[] = [];
+  public deck: Card[] = [];
+  public discard: Card[] = [];
   public currentPlayerIndex: number = 0;
   public currentPlayer: Player | undefined;
-  public actions:number = 3;
+  public actions: number = 3;
 
-  public from:Player | undefined;
-  public to:Player | undefined;
-  public amount:number = 2;
+  public from: Player | undefined;
+  public to: Player | undefined;
+  public amount: number = 2;
 
   statusMessage: string | undefined | null;
   decisionState: 'playing' | 'paying' | null = null;
@@ -56,19 +56,23 @@ export class PlayComponent implements OnInit {
       this.currentPlayer = player;
     });
 
+    this.gameService.actions$.subscribe(actions => {
+      this.actions = actions;
+    });
+
     this.gameService.paymentQueue$.subscribe(queue => {
       if (queue.length) {
-          this.from = queue[0].from;
-          this.to = queue[0].to;
-          this.amount = queue[0].amount;
-          this.decisionState = "paying";
+        this.from = queue[0].from;
+        this.to = queue[0].to;
+        this.amount = queue[0].amount;
+        this.decisionState = "paying";
       } else {
-          this.decisionState = null;
+        this.decisionState = null;
       }
     });
 
     this.gameService.statusMessage$.subscribe(msg => {
-        this.statusMessage = msg;
+      this.statusMessage = msg;
     });
 
     this.gameService.isDebtCollectorSelectable$.subscribe(isSelectable => {
@@ -90,13 +94,6 @@ export class PlayComponent implements OnInit {
     this.gameService.selectedProperty$.subscribe(property => {
       this.selectedProperty = property;
     });
-  
-    this.gameService.actionComplete$.subscribe(complete => {
-      if (complete) {
-        this.decrementActions();
-        this.gameService.actionCompleteSubject.next(false); // Reset the flag
-      }
-    });
 
     this.gameService.isSelectingPropertySetForBuilding$.subscribe(isSelecting => {
       this.isSelectingPropertySetForBuilding = isSelecting;
@@ -106,43 +103,24 @@ export class PlayComponent implements OnInit {
       this.buildingType = type;
     });
 
-    this.gameService.isJustSayNoActive$.subscribe(isActive => {
-      if (isActive) {
-        this.targetPlayerForJustSayNo = isActive?.from ?? null;
-      }
-    })
+    this.gameService.isJustSayNoActive$.subscribe(activeState => {
+      this.targetPlayerForJustSayNo = activeState?.from ?? null;
+    });
   }
 
-  setup(){
+  setup() {
     this.gameService.setup(this.name, this.numberOfPlayers);
     this.players = this.gameService.game.players;
     this.start = true;
     this.deck = this.gameService.game.deck;
   }
 
-  playCard(player:Player, card:Card){
-    if (player.id != this.currentPlayer?.id) {
+  playCard(player: Player, card: Card) {
+    if (player.id !== this.currentPlayer?.id) {
       console.log("not your turn");
-      return
+      return;
     }
-
-    const wasLastDiscard = this.gameService.discardAmount === 1;
-    const isInteractiveCard = this.gameService.isInteractiveCard(card);
-
     this.gameService.playCard(player, card);
-    
-    if (!wasLastDiscard && !isInteractiveCard && this.decisionState !== "paying") {
-      this.decrementActions()
-    }
-  }
-
-  decrementActions() {
-    if (this.gameService.discardAmount === 0) {
-      this.actions--;
-      if (this.actions == 0){
-        this.endTurn();
-      }
-    }
   }
 
   pay() {
@@ -152,18 +130,12 @@ export class PlayComponent implements OnInit {
   }
   
   selectCard(player: Player, card: Card) {
-    // If we're in payment mode
     if (this.decisionState === 'paying') {
       this.gameService.selectCardForPayment(player, card);
-    }
-    // If we're selecting property for Forced Deal
-    else if (this.isPropertySelectable && card.type === 'property') {
-      // If selecting target property
+    } else if (this.isPropertySelectable && card.type === 'property') {
       if (!this.selectedProperty) {
         this.gameService.selectTargetProperty(player, card as PropertyCard);
-      }
-      // If selecting own property for swap
-      else if (this.isForcedDealActive && player === this.currentPlayer) {
+      } else if (this.isForcedDealActive && player === this.currentPlayer) {
         this.gameService.selectOwnProperty(card as PropertyCard);
       }
     } else if (this.isSelectingPropertySetForBuilding && player === this.currentPlayer && card.type === 'property') {
@@ -171,19 +143,17 @@ export class PlayComponent implements OnInit {
     }
   }
 
-  sortProperties(player:Player){
+  sortProperties(player: Player) {
     return player.properties.sort((a, b) => this.gameService.getCurrentColor(a).localeCompare(this.gameService.getCurrentColor(b)));
   }
 
-  // Helper function to get the total available money/property a player can pay
   getTotalPayableAmount(player: Player): number {
     let bankTotal = player.bank.reduce((sum, card) => sum + (card.value || 0), 0);
     let propertyTotal = player.properties.reduce((sum, card) => sum + (card.value || 0), 0);
     return bankTotal + propertyTotal;
   }
 
-  endTurn(){
-    this.actions = 3;
+  endTurn() {
     this.gameService.endTurn();
   }
 
@@ -192,15 +162,11 @@ export class PlayComponent implements OnInit {
   }
 
   addToBank(player: Player, card: Card) {
-    if (player.id != this.currentPlayer?.id) {
+    if (player.id !== this.currentPlayer?.id) {
       console.log("not your turn");
-      return
+      return;
     }
-    if (card.type === 'action') {
-      player.bank.push(card);
-      player.hand = player.hand.filter(c => c !== card); 
-      this.decrementActions()
-    }
+    this.gameService.bankActionCard(player, card);
   }
 
   selectDebtCollector(player: Player) {
@@ -215,17 +181,17 @@ export class PlayComponent implements OnInit {
     this.gameService.selectOwnProperty(property);
   }
 
-  flip(card: Card){
-    this.gameService.flip(card)
+  flip(card: Card) {
+    this.gameService.flip(card);
   }
 
-  isFlipped(card:Card){
+  isFlipped(card: Card) {
     const propertyCard = card as PropertyCard;
-    propertyCard.currentColor ??= propertyCard.colors[0]; // set to first color initially
+    propertyCard.currentColor ??= propertyCard.colors[0];
     return propertyCard.currentColor === propertyCard.colors[1];
   }
 
-  isWildcard(card:Card){
+  isWildcard(card: Card) {
     let name = card.name.toLowerCase();
     return /wildcard/.test(name) && /&/.test(name);
   }
@@ -233,7 +199,7 @@ export class PlayComponent implements OnInit {
   isWildcardProper(card: Card): boolean {
     const name = card.name.toLowerCase();
     const propertyCard = card as PropertyCard;
-    return /wildcard/.test(name) && propertyCard.colors.length > 2; // True wildcards have more than 2 colors
+    return /wildcard/.test(name) && propertyCard.colors.length > 2;
   }
   
   changeColor(card: Card, color: string) {
@@ -241,13 +207,6 @@ export class PlayComponent implements OnInit {
   }
 
   sayNo(useJustSayNo: boolean) {
-    // if (!this.targetPlayerForJustSayNo) return;
-    
-    // Pass the decision to the service
     this.gameService.sayNo(useJustSayNo);
-    
-    // Reset local state
-    this.targetPlayerForJustSayNo = null;
   }
-  
 }
