@@ -4,6 +4,7 @@
 
 export const environment = {
   production: false,
+  useStaticCards: false,
   apiUrl: 'http://localhost:3000/api'
 };
 

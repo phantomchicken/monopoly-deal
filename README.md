@@ -16,6 +16,18 @@ npx nodemon server.js
 
 MongoDB must also be running at `mongodb://localhost:27017/monopoly-deal`. If using the included Docker setup, start just the database with `docker compose up -d mongo-db` from the same directory. The Cards gallery requests `http://localhost:3000/api/cards`; opening that URL should return a JSON array. Gameplay uses the bundled `src/assets/cards.json`, so it can work even when the API is stopped.
 
+### Static production deployment
+
+The production build uses the bundled card JSON and images for both gameplay and the Cards gallery. It does not require MongoDB or the Node API; the local development build continues to use the MongoDB-backed gallery API.
+
+Run a production build with:
+
+```powershell
+npm run build
+```
+
+The app's game state exists only in each browser tab, so visitors start independent games. The app does not currently synchronize a game between browsers.
+
 ### Responding to AI actions
 
 AI turns pause whenever a human must respond. For Birthday, rent, and Debt Collector, choose an asset from the payment panel. Payments come from your bank, properties, or buildings in play, never your hand. If you have Just Say No, first choose whether to play it or accept the action; accepting then opens the payment chooser. Players with no payable assets owe nothing and are skipped. Human players also choose whether to block property theft or swaps with Just Say No.

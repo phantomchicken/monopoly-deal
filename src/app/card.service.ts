@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../environments/environment';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Card } from 'src/app/classes/card';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 
 
 @Injectable({
@@ -11,13 +11,14 @@ import { Observable } from 'rxjs';
 export class CardService {
 
   constructor(private http: HttpClient) {}
-  private apiUrl = environment.apiUrl; 
-    public getCards(): Observable<Card[]>{
-      const url = `${this.apiUrl}/cards`;
-      return this.http.get<Card[]>(`${this.apiUrl}/cards`);
+
+  private staticCards: Card[] = require('../assets/cards.json');
+
+  public getCards(): Observable<Card[]> {
+    if (environment.useStaticCards) {
+      return of(this.staticCards);
     }
 
-    private processError(error: any): Promise<any> {
-      return Promise.reject(error.error.message || error);
-    }
+    return this.http.get<Card[]>(`${environment.apiUrl}/cards`);
+  }
 }
