@@ -1,85 +1,257 @@
-/* Floating $ circle style */
-.floating-dollar {
-  position: absolute;
-  top: 5px;
-  left: 5px;
-  background-color: #ffcc00;
-  color: white;
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
+/* Table Arena Wrapper */
+.game-wrapper {
+  min-height: 90vh;
+  background: linear-gradient(180deg, #eef2f6 0%, #e2e8f0 100%);
+}
+
+/* Victory Overlay */
+.victory-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(6px);
+  z-index: 2000;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  font-size: 20px;
-  font-weight: bold;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  z-index: 1;
+  animation: fadeIn 0.4s ease-out;
 }
 
-/* Optional: Add hover effect */
-.floating-dollar:hover {
-  background-color: #ff9900;
+.victory-card {
+  background: #ffffff;
+  border-radius: 20px;
+  max-width: 540px;
+  width: 90%;
+  border: 3px solid #ffc107;
+  animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-/* Card image styles */
-.card-img {
-  width: 100px;
-  height: auto;
+.trophy-bounce {
+  animation: bounce 1.5s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+@keyframes popIn {
+  from { transform: scale(0.85); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Setup Card */
+.setup-card {
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+/* Center Deck Table */
+.deck-table {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid #cbd5e1;
+  border-radius: 16px;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.pile-card-wrapper {
+  position: relative;
+  display: inline-block;
   cursor: pointer;
   transition: transform 0.2s;
-  pointer-events: auto;
 }
 
-.card-img:hover {
-  transform: scale(1.1); /* Slight zoom on hover */
+.pile-card-wrapper:hover {
+  transform: translateY(-3px);
 }
 
-/* Prevent overflowing when zooming */
+.deck-img {
+  width: 95px;
+  height: 135px;
+  object-fit: cover;
+  border: 1px solid #94a3b8;
+}
+
+.empty-pile {
+  width: 95px;
+  height: 135px;
+  border: 2px dashed #94a3b8;
+  background-color: #f1f5f9;
+}
+
+.pile-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  font-size: 13px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.pile-label {
+  font-size: 13px;
+  color: #475569;
+}
+
+/* Player Boards */
+.player-board {
+  border-radius: 16px;
+  background: #ffffff;
+  transition: all 0.3s ease;
+  border: 2px solid transparent !important;
+}
+
+.player-board.active-turn {
+  border-color: #198754 !important;
+  box-shadow: 0 8px 25px rgba(25, 135, 84, 0.25) !important;
+}
+
+.player-board.winner-board {
+  border-color: #ffc107 !important;
+  box-shadow: 0 8px 25px rgba(255, 193, 7, 0.35) !important;
+}
+
+.player-name-badge {
+  color: #1e293b;
+  padding: 4px 10px;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.player-name-badge.clickable-debt {
+  background-color: #fee2e2;
+  color: #dc2626;
+  cursor: pointer;
+  border: 1px dashed #dc2626;
+}
+
+.player-name-badge.clickable-debt:hover {
+  background-color: #dc2626;
+  color: #ffffff;
+}
+
+/* Zone Boxes */
+.zone-box {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  min-height: 170px;
+}
+
+.bank-zone {
+  background-color: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+/* Cards & Interaction */
+.cards-lane {
+  min-height: 125px;
+  align-items: flex-start;
+}
+
+.card-slot {
+  display: inline-block;
+}
+
 .card-container {
   position: relative;
   display: inline-block;
-  overflow: hidden;
   cursor: pointer;
 }
 
-/* Floating card styles */
-.floating-card {
-  position: fixed;
-  background-color: #ffffff;
-  border-radius: 12px;
-  padding: 16px 20px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
-}
-
-/* Flex container for player cards */
-.d-flex.flex-wrap {
-  width: 100%;
-}
-
-/* Clickable name style */
-.clickable-name {
+.card-img {
+  width: 95px;
+  height: auto;
   cursor: pointer;
-  padding: 4px 8px;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.card-img:hover {
+  transform: translateY(-8px) scale(1.05);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2) !important;
+  z-index: 10;
+}
+
+.card-img-bank {
+  width: 80px;
+  height: auto;
+  cursor: pointer;
+  transition: transform 0.2s;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.card-img-bank:hover {
+  transform: translateY(-6px) scale(1.06);
+  z-index: 10;
+}
+
+.card-img-mini {
+  width: 48px;
+  height: auto;
+  border: 1px solid #333;
+}
+
+.disabled-card {
+  opacity: 0.85;
+}
+
+/* Floating Gold Dollar on Hand Action Cards */
+.floating-dollar {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  background: linear-gradient(135deg, #ffd700 0%, #ff9900 100%);
+  color: #1e293b;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  border: 1.5px solid #ffffff;
+  transition: transform 0.2s;
+}
+
+.floating-dollar:hover {
+  transform: scale(1.2);
+}
+
+/* Wildcard Flip Button */
+.wildcard-flip-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: #ffffff;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  cursor: pointer;
+  border: 1px solid #cbd5e1;
+  transition: transform 0.2s;
+}
+
+.wildcard-flip-btn:hover {
+  transform: rotate(180deg) scale(1.15);
+}
+
+.color-select {
+  font-size: 11px;
+  padding: 2px 4px;
   border-radius: 4px;
-  transition: all 0.2s ease;
-}
-
-.clickable-name.hovered:hover {
-  background-color: #e9ecef;
-  color: #0056b3;
-}
-
-.clickable-name.hovered.selected {
-  background-color: #007bff;
-  color: white;
-}
-
-/* Disable clicking when not selectable */
-.clickable-name:not(.hovered) {
-  cursor: default;
 }
 
 .flip {
@@ -89,16 +261,17 @@
 .building-card {
   position: relative;
   display: inline-block;
+  cursor: pointer;
 }
 
 .color-badge {
   position: absolute;
-  top: 4px;
-  left: 4px;
-  width: 16px;
-  height: 16px;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
   border-radius: 3px;
-  border: 1px solid #333;
+  border: 1px solid #000;
 }
 
 /* Color mappings */
@@ -112,3 +285,52 @@
 .dark-green { background-color: #006400; }
 .dark-blue { background-color: #00008B; }
 .black { background-color: #333333; }
+
+/* Status Notification Banner */
+.status-banner {
+  z-index: 1050;
+  min-width: 380px;
+  max-width: 90vw;
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUp {
+  from { transform: translate(-50%, 20px); opacity: 0; }
+  to { transform: translate(-50%, 0); opacity: 1; }
+}
+
+/* Floating Action Dock (Bottom Right) */
+.action-dock {
+  z-index: 1040;
+}
+
+.action-pip {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.pip-active {
+  background-color: #198754;
+  box-shadow: 0 0 6px rgba(25, 135, 84, 0.6);
+}
+
+.pip-empty {
+  background-color: #cbd5e1;
+}
+
+.pass-btn {
+  border-radius: 12px;
+}
+
+.pulse-btn {
+  animation: pulse 1.8s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}

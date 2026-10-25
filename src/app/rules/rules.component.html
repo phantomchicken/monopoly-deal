@@ -1,0 +1,196 @@
+<div class="container py-4">
+    <!-- Header -->
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold text-primary">Monopoly Deal Rules</h1>
+        <p class="lead text-muted">The fast-paced, addictive card game where your luck can change in the play of a card!</p>
+        <div class="d-flex justify-content-center gap-3">
+            <span class="badge bg-success fs-6 px-3 py-2">👥 2–5 Players</span>
+            <span class="badge bg-primary fs-6 px-3 py-2">⏱️ ~15 Minutes</span>
+            <span class="badge bg-warning text-dark fs-6 px-3 py-2">🎯 Goal: 3 Full Sets</span>
+        </div>
+    </div>
+
+    <!-- Quick Overview Card -->
+    <div class="card shadow-sm border-primary mb-4">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">🏆 The Objective</h4>
+        </div>
+        <div class="card-body">
+            <p class="fs-5 mb-0">
+                Be the first player to collect <strong>3 complete Property Sets</strong> of different colors in front of you on the table.
+            </p>
+        </div>
+    </div>
+
+    <!-- Turn Structure -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-dark text-white">
+            <h4 class="mb-0">🔄 What to Do On Your Turn</h4>
+        </div>
+        <div class="card-body">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="p-3 border rounded h-100 bg-light">
+                        <div class="fs-2 text-primary fw-bold mb-2">1. Draw</div>
+                        <h5>Draw 2 Cards</h5>
+                        <p class="text-muted">Take 2 cards from the Draw Pile. If you start your turn with <strong>0 cards</strong> in your hand, draw <strong>5 cards</strong> instead!</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 border rounded h-100 bg-light">
+                        <div class="fs-2 text-success fw-bold mb-2">2. Play</div>
+                        <h5>Play Up to 3 Cards</h5>
+                        <p class="text-muted">You may play 0, 1, 2, or up to 3 cards in any combination:</p>
+                        <ul class="text-muted small">
+                            <li><strong>Bank Money/Action Cards</strong> for value ($M).</li>
+                            <li><strong>Lay down Properties</strong> in front of you.</li>
+                            <li><strong>Play Action Cards</strong> to collect rent or steal cards!</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 border rounded h-100 bg-light">
+                        <div class="fs-2 text-danger fw-bold mb-2">3. End Turn</div>
+                        <h5>Discard if &gt; 7 Cards</h5>
+                        <p class="text-muted">You can never have more than <strong>7 cards</strong> in your hand at the end of your turn. Discard extras to the Discard Pile, then click <strong>Pass</strong>.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card Types -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-secondary text-white">
+            <h4 class="mb-0">🃏 Types of Cards</h4>
+        </div>
+        <div class="card-body">
+            <div class="row g-4">
+                <!-- Properties -->
+                <div class="col-md-6">
+                    <div class="border rounded p-3 h-100">
+                        <h5 class="text-success">🏠 Property & Wildcard Cards</h5>
+                        <p>Play property cards face-up in front of you. Each color requires a specific set size to be complete:</p>
+                        <div class="row row-cols-2 g-2 small">
+                            <div><span class="badge" style="background:#8B4513">Brown</span>: 2 cards</div>
+                            <div><span class="badge" style="background:#87CEFA; color:#000">Light Blue</span>: 3 cards</div>
+                            <div><span class="badge" style="background:#FF69B4">Pink</span>: 3 cards</div>
+                            <div><span class="badge" style="background:#FFA500">Orange</span>: 3 cards</div>
+                            <div><span class="badge" style="background:#FF0000">Red</span>: 3 cards</div>
+                            <div><span class="badge" style="background:#FFD700; color:#000">Yellow</span>: 3 cards</div>
+                            <div><span class="badge" style="background:#006400">Dark Green</span>: 3 cards</div>
+                            <div><span class="badge" style="background:#00008B">Dark Blue</span>: 2 cards</div>
+                            <div><span class="badge" style="background:#333333">Railroads (Black)</span>: 4 cards</div>
+                            <div><span class="badge" style="background:#90EE90; color:#000">Utilities (Light Green)</span>: 2 cards</div>
+                        </div>
+                        <p class="mt-2 text-muted small"><strong>Wildcard Properties:</strong> Can be flipped or switched between colors to help complete sets.</p>
+                    </div>
+                </div>
+
+                <!-- Money Cards -->
+                <div class="col-md-6">
+                    <div class="border rounded p-3 h-100">
+                        <h5 class="text-warning text-dark">💰 Money & Bank</h5>
+                        <p>Play Money cards directly into your Bank. Money in your bank is safe from most actions and is used to pay rent and debts.</p>
+                        <p class="text-muted small">
+                            <strong>Banking Action Cards:</strong> You can also put Action cards into your Bank as money using their dollar value (top corner). Once banked, they can only be used as cash, not for their action!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Cards Glossary -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-info text-dark">
+            <h4 class="mb-0">⚡ Action Cards Explained</h4>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 25%;">Card</th>
+                            <th style="width: 15%;">Bank Value</th>
+                            <th>Effect</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong class="text-danger">Deal Breaker</strong></td>
+                            <td><span class="badge bg-warning text-dark">5M</span></td>
+                            <td>Steal a complete property set from another player, including any buildings on it!</td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-primary">Just Say No</strong></td>
+                            <td><span class="badge bg-warning text-dark">4M</span></td>
+                            <td>Cancel any action card played against you (rent, steal, debt). Can also be countered with another Just Say No!</td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-success">Sly Deal</strong></td>
+                            <td><span class="badge bg-warning text-dark">3M</span></td>
+                            <td>Steal a single property card from an opponent (cannot steal from a completed set).</td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-warning text-dark">Forced Deal</strong></td>
+                            <td><span class="badge bg-warning text-dark">3M</span></td>
+                            <td>Swap one of your properties with an opponent's property (cannot swap from completed sets).</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Debt Collector</strong></td>
+                            <td><span class="badge bg-warning text-dark">3M</span></td>
+                            <td>Force any single player to pay you 5M from their bank or properties.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>It's My Birthday</strong></td>
+                            <td><span class="badge bg-warning text-dark">2M</span></td>
+                            <td>All other players must each pay you 2M.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Pass Go</strong></td>
+                            <td><span class="badge bg-warning text-dark">1M</span></td>
+                            <td>Draw 2 extra cards from the deck.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Double The Rent</strong></td>
+                            <td><span class="badge bg-warning text-dark">1M</span></td>
+                            <td>Play this with a Rent card to double the total rent amount due from players!</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Rent Cards</strong></td>
+                            <td><span class="badge bg-warning text-dark">1M–3M</span></td>
+                            <td>Charge opponents rent based on the number of properties you own of that color.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>House (+3M) &amp; Hotel (+4M)</strong></td>
+                            <td><span class="badge bg-warning text-dark">3M / 4M</span></td>
+                            <td>Add to completed sets to boost rent value. Hotel requires a House first. Cannot be placed on Railroads or Utilities.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Paying Debts Rules -->
+    <div class="card shadow-sm mb-5">
+        <div class="card-header bg-danger text-white">
+            <h4 class="mb-0">💳 Crucial Payment Rules</h4>
+        </div>
+        <div class="card-body">
+            <ul class="fs-6 mb-0">
+                <li class="mb-2"><strong>Cards in Play Only:</strong> You can <strong>NEVER</strong> pay from your hand! Only cards already placed in your Bank or Properties on the table can be used.</li>
+                <li class="mb-2"><strong>No Change Given:</strong> If you owe 2M and only have a 5M bill or property, you do not get change. Overpayments are lost!</li>
+                <li class="mb-2"><strong>Paying with Properties:</strong> If you have no cash in your bank, you must pay with properties in play. Properties paid to an opponent go straight to their properties area.</li>
+                <li><strong>Bankrupt?:</strong> If you have no money and no properties in play, you pay nothing. Debts are not carried over to future turns!</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Play Now Button -->
+    <div class="text-center mb-5">
+        <a routerLink="/play" (click)="onPlayClick()" class="btn btn-primary btn-lg px-5 shadow">🎮 Ready? Play Now!</a>
+    </div>
+</div>
+

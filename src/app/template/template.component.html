@@ -1,27 +1,24 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="#">Monopoly Deal</a>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm sticky-top">
+    <div class="container-fluid px-4">
+      <a class="navbar-brand fw-bold d-flex align-items-center gap-2" routerLink="/play">
+        <span class="fs-4">🎩</span> Monopoly Deal
+      </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-        <div class="navbar-nav">
-            <a class="nav-link me-5 active" aria-current="page" routerLink="/play">Play</a>
-            <a class="nav-link me-5 active" aria-current="page" routerLink="/cards">Cards</a>
-          <a class="nav-link me-5" routerLink="/rules">Rules</a>
+        <div class="navbar-nav ms-auto gap-2">
+            <a class="nav-link px-3" routerLink="/play" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">🎮 Play</a>
+            <a class="nav-link px-3" routerLink="/cards" routerLinkActive="active">🃏 Cards Gallery</a>
+            <a class="nav-link px-3" routerLink="/rules" routerLinkActive="active">📖 Rules</a>
         </div>
       </div>
     </div>
-  </nav>
-<router-outlet>
-</router-outlet>
-<div class="container-fluid mt-4 content">
+</nav>
+
+<div class="main-content">
     <router-outlet></router-outlet>
-    <footer class="mt-5">
-      <div class="row text-center justify-content-center">
-        <div class="col-12 ">
-          <small>&copy; Nino Brezac</small>
-        </div>
-      </div>
+    <footer class="mt-5 py-4 border-top text-center text-muted">
+        <small>&copy; Monopoly Deal &bull; Created with Angular</small>
     </footer>
 </div>

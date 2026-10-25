@@ -1,107 +1,225 @@
-<div class="container-fluid p-3">
-    <!-- Setup Form -->
-    <div class="row mb-4">
-        <div class="col-md-6 mx-auto">
-            <form (ngSubmit)="setup()" class="d-flex gap-2 mb-2">
-                <input type="text" class="form-control" name="name" [(ngModel)]="name" placeholder="Name">
-                <input type="number" class="form-control" name="numberOfPlayers" [(ngModel)]="numberOfPlayers" min="2" max="5" placeholder="Players">
-                <button type="submit" class="btn btn-success w-25">Start</button>
-            </form>
+<div class="game-wrapper py-3">
+    <!-- Victory Overlay (Game Locked) -->
+    <div *ngIf="winner" class="victory-overlay">
+        <div class="victory-card text-center shadow-lg p-5">
+            <div class="trophy-bounce display-1 mb-2">🏆</div>
+            <h1 class="display-5 fw-bold text-success mb-2">{{ winner.name }} Wins!</h1>
+            <p class="lead text-muted mb-4">Completed 3 full property sets and dominated Monopoly Deal!</p>
+            <div class="d-flex justify-content-center gap-2 mb-4">
+                <span class="badge bg-warning text-dark fs-5 px-3 py-2">⭐ 3 Full Sets Completed</span>
+                <span class="badge bg-danger fs-5 px-3 py-2">🔒 Game Locked</span>
+            </div>
+            <p class="text-secondary small">All moves are locked. Use the button below to start a fresh match.</p>
+            <button class="btn btn-success btn-lg px-5 py-3 fw-bold shadow pulse-btn" (click)="restartGame()">
+                🔄 Start New Game
+            </button>
+        </div>
+    </div>
 
-            <div *ngIf="statusMessage" class="alert alert-info floating-card position-fixed bottom-0 start-50 translate-middle-x mb-5 text-center bg-white bg-rounded">
-                {{ statusMessage }}
-                <div *ngIf="targetPlayerForJustSayNo" class="mt-2 d-flex justify-content-center gap-2">
-                    <button type="button" class="btn btn-danger" (click)="sayNo(true)">Say No</button>
-                    <button type="button" class="btn btn-secondary" (click)="sayNo(false)">Accept</button>
+    <!-- Top Setup & Controls Bar -->
+    <div class="container mb-4">
+        <div class="card setup-card shadow-sm border-0">
+            <div class="card-body p-3">
+                <div class="row g-2 align-items-center justify-content-center">
+                    <div class="col-auto">
+                        <label class="fw-semibold text-muted small d-block">YOUR NAME</label>
+                        <input type="text" class="form-control form-control-sm" [(ngModel)]="name" placeholder="Name" autocomplete="off">
+                    </div>
+                    <div class="col-auto">
+                        <label class="fw-semibold text-muted small d-block">PLAYERS (2-5)</label>
+                        <input type="number" class="form-control form-control-sm" [(ngModel)]="numberOfPlayers" min="2" max="5">
+                    </div>
+                    <div class="col-auto align-self-end">
+                        <button type="button" class="btn btn-primary btn-sm px-4 fw-semibold shadow-sm" (click)="setup()">
+                            {{ start ? '🔄 Restart Game' : '🎮 Start Game' }}
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Deck Area -->
-    <div class="row justify-content-center mb-4">
-        <div class="col-auto">
-            <div class="d-flex gap-4 align-items-center">
-                <div class="text-center">
-                    <img [src]="'assets/deck.jpg'" alt="deck" class="card-img">
-                    <div class="mt-2">Draw ({{ deck.length }})</div>
+    <!-- Deck & Discard Center Table Area -->
+    <div class="container mb-4" *ngIf="start">
+        <div class="deck-table p-3 rounded shadow-sm text-center">
+            <div class="d-flex justify-content-center align-items-center gap-5">
+                <!-- Draw Pile -->
+                <div class="pile-box text-center">
+                    <div class="pile-card-wrapper shadow-sm">
+                        <img [src]="'assets/deck.jpg'" alt="Draw Deck" class="deck-img rounded">
+                        <span class="badge bg-primary pile-badge">{{ deck.length }}</span>
+                    </div>
+                    <div class="pile-label mt-2 fw-semibold">Draw Pile</div>
                 </div>
-                <div class="text-center">
-                    <img *ngIf="discard.length" src="assets/{{discard[discard.length-1].imageName}}" alt="Discard Pile" class="card-img">
-                    <div class="mt-2">Discard ({{ discard.length }})</div>
+
+                <!-- Discard Pile -->
+                <div class="pile-box text-center">
+                    <div class="pile-card-wrapper shadow-sm" *ngIf="discard.length; else emptyDiscard">
+                        <img [src]="'assets/' + discard[discard.length - 1].imageName" alt="Discard Pile" class="deck-img rounded">
+                        <span class="badge bg-secondary pile-badge">{{ discard.length }}</span>
+                    </div>
+                    <ng-template #emptyDiscard>
+                        <div class="empty-pile rounded d-flex align-items-center justify-content-center">
+                            <span class="text-muted small">Empty</span>
+                        </div>
+                    </ng-template>
+                    <div class="pile-label mt-2 fw-semibold">Discard Pile</div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Game Board -->
-    <div *ngIf="start" class="container-fluid">
-        <!-- Players -->
-        <div class="row mb-4" *ngFor="let player of players; let i = index">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">
-                            <span (click)="selectDebtCollector(player)" class="clickable-name" [ngClass]="{ 'hovered': isDebtCollectorSelectable }">
-                                {{ player.name }}
-                            </span>
-                        </h5>
+    <!-- Floating Status & Interactive Prompt Bar -->
+    <div *ngIf="statusMessage" class="status-banner position-fixed bottom-0 start-50 translate-middle-x mb-5 p-3 rounded-pill shadow-lg text-center bg-dark text-white">
+        <div class="d-flex align-items-center justify-content-center gap-3 px-3">
+            <span class="fs-6">{{ statusMessage }}</span>
+            <div *ngIf="targetPlayerForJustSayNo" class="d-inline-flex gap-2">
+                <button type="button" class="btn btn-danger btn-sm px-3 fw-bold" (click)="sayNo(true)">🛡️ Say No</button>
+                <button type="button" class="btn btn-outline-light btn-sm px-3" (click)="sayNo(false)">Accept</button>
+            </div>
+        </div>
+    </div>
 
-                        <!-- Hand -->
-                        <div class="row mb-3">
-                            <div class="col-6">
-                                <h6 class="card-title">Hand:</h6>
-                                <div class="d-flex flex-wrap gap-2">
-                                    <div *ngFor="let card of player.hand">
-                                        <div class="card-container">
-                                            <img [src]="player==currentPlayer ? 'assets/' + card.imageName : 'assets/facedown.jpg'" [alt]="card.name" class="card-img" (click)="playCard(player, card)">
-                                            <div *ngIf="card.type === 'action' && player == currentPlayer" class="floating-dollar" (click)="addToBank(player, card)">$
+    <!-- Main Game Arena -->
+    <div *ngIf="start" class="container-fluid px-lg-5">
+        <div class="row g-4">
+            <div class="col-12" *ngFor="let player of players; let i = index">
+                <div class="card player-board shadow-sm border-0" 
+                     [ngClass]="{'active-turn': player.id === currentPlayer?.id, 'winner-board': player.id === winner?.id}">
+                    <div class="card-body p-3 p-md-4">
+                        <!-- Player Header Bar -->
+                        <div class="d-flex flex-wrap align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                            <div class="d-flex align-items-center gap-3">
+                                <h4 class="mb-0 fw-bold">
+                                    <span (click)="selectDebtCollector(player)" 
+                                          class="player-name-badge" 
+                                          [ngClass]="{ 'clickable-debt': isDebtCollectorSelectable && player.id !== currentPlayer?.id }">
+                                        👤 {{ player.name }}
+                                    </span>
+                                </h4>
+                                <span *ngIf="player.id === currentPlayer?.id && !winner" class="badge bg-success turn-pill animate-pulse">
+                                    ⚡ Active Turn
+                                </span>
+                                <span *ngIf="player.id === winner?.id" class="badge bg-warning text-dark fs-6">
+                                    🏆 Winner!
+                                </span>
+                            </div>
+
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge bg-info text-dark px-3 py-2">
+                                    Full Sets: <strong>{{ getFullSetCount(player) }}/3</strong>
+                                </span>
+                                <span class="badge bg-success px-3 py-2">
+                                    Bank: <strong>{{ getBankTotal(player) }}M</strong>
+                                </span>
+                                <span class="badge bg-secondary px-3 py-2">
+                                    Hand: <strong>{{ player.hand.length }}</strong> cards
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Player Zones (Hand, Properties, Bank) -->
+                        <div class="row g-3">
+                            <!-- Hand Area -->
+                            <div class="col-lg-5 col-md-12">
+                                <div class="zone-box p-3 rounded h-100">
+                                    <div class="zone-title fw-bold text-muted mb-2 small text-uppercase">
+                                        Hand ({{ player.hand.length }})
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 cards-lane">
+                                        <div *ngFor="let card of player.hand" class="card-slot">
+                                            <div class="card-container">
+                                                <img [src]="player.id === currentPlayer?.id ? 'assets/' + card.imageName : 'assets/facedown.jpg'" 
+                                                     [alt]="card.name" 
+                                                     class="card-img rounded shadow-sm" 
+                                                     [ngClass]="{'disabled-card': winner || player.id !== currentPlayer?.id}"
+                                                     (click)="playCard(player, card)"
+                                                     [title]="player.id === currentPlayer?.id ? card.name : 'Hidden Card'">
+                                                <!-- Action Card Bank Dollar Icon -->
+                                                <div *ngIf="card.type === 'action' && player.id === currentPlayer?.id && !winner" 
+                                                     class="floating-dollar shadow-sm" 
+                                                     (click)="addToBank(player, card)" 
+                                                     title="Bank as {{card.value}}M cash">
+                                                    $
+                                                </div>
                                             </div>
                                         </div>
+                                        <div *ngIf="player.hand.length === 0" class="text-muted small py-3">No cards in hand</div>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Properties -->
-                            <div class="col-4">
-                                <h6 class="card-title">Properties:</h6>
-                                <div class="d-flex flex-wrap gap-2">
-                                    <div *ngFor="let prop of sortProperties(player)">
-                                        <div class="card-container">
-                                        <img [src]="'assets/' + prop.imageName" [alt]="prop.name" class="card-img" [ngClass]="{'flip': isFlipped(prop)}" (click)="selectCard(player, prop)">
-                                        <div class="d-flex gap-1 align-items-center mt-1" *ngIf="prop.buildings">
-                                            <div *ngIf="prop.buildings.house" class="building-card" (click)="selectCard(player, prop.buildings.house)">
-                                              <div class="color-badge" [ngClass]="prop.currentColor.replace(' ', '-')"></div>
-                                              <img [src]="'assets/' + prop.buildings.house.imageName" [alt]="prop.buildings.house.name" class="card-img">
-                                            </div>
-                                          
-                                            <div *ngIf="prop.buildings.hotel" class="building-card" (click)="selectCard(player, prop.buildings.hotel)">
-                                              <div class="color-badge" [ngClass]="prop.currentColor.replace(' ', '-')"></div>
-                                              <img [src]="'assets/' + prop.buildings.hotel.imageName" [alt]="prop.buildings.hotel.name" class="card-img">
-                                            </div>
-                                          </div>                                          
-                                        <div *ngIf="isWildcard(prop) && player == currentPlayer" class="floating-dollar" (click)="flip(prop)">🔄
-                                        </div>
-                                        <div *ngIf="isWildcardProper(prop) && player === currentPlayer" class="mt-2">
-                                            <div class="color-badge" [ngClass]="prop.currentColor.toLowerCase().replace(' ', '-')"></div>
-                                            <select class="form-select form-select-sm" 
-                                                    [(ngModel)]="prop.currentColor" 
-                                                    (change)="changeColor(prop, prop.currentColor)">
-                                              <option *ngFor="let color of prop.colors" [value]="color">
-                                                {{ color | titlecase }}
-                                              </option>
-                                            </select>
-                                        </div>
+                            <!-- Properties Area -->
+                            <div class="col-lg-5 col-md-8">
+                                <div class="zone-box p-3 rounded h-100">
+                                    <div class="zone-title fw-bold text-muted mb-2 small text-uppercase">
+                                        Properties in Play ({{ player.properties.length }})
                                     </div>
-                                </div>
+                                    <div class="d-flex flex-wrap gap-2 cards-lane">
+                                        <div *ngFor="let prop of sortProperties(player)" class="card-slot">
+                                            <div class="card-container">
+                                                <img [src]="'assets/' + prop.imageName" 
+                                                     [alt]="prop.name" 
+                                                     class="card-img rounded shadow-sm" 
+                                                     [ngClass]="{'flip': isFlipped(prop)}" 
+                                                     (click)="selectCard(player, prop)"
+                                                     [title]="prop.name">
+                                                
+                                                <!-- Buildings: House & Hotel -->
+                                                <div class="d-flex gap-1 align-items-center mt-1" *ngIf="prop.buildings">
+                                                    <div *ngIf="prop.buildings.house" class="building-card" (click)="selectCard(player, prop.buildings.house)">
+                                                        <div class="color-badge" [ngClass]="prop.currentColor.replace(' ', '-')"></div>
+                                                        <img [src]="'assets/' + prop.buildings.house.imageName" [alt]="prop.buildings.house.name" class="card-img-mini rounded">
+                                                    </div>
+                                                    <div *ngIf="prop.buildings.hotel" class="building-card" (click)="selectCard(player, prop.buildings.hotel)">
+                                                        <div class="color-badge" [ngClass]="prop.currentColor.replace(' ', '-')"></div>
+                                                        <img [src]="'assets/' + prop.buildings.hotel.imageName" [alt]="prop.buildings.hotel.name" class="card-img-mini rounded">
+                                                    </div>
+                                                </div>
+
+                                                <!-- Dual Wildcard Flip Button -->
+                                                <div *ngIf="isWildcard(prop) && player.id === currentPlayer?.id && !winner" 
+                                                     class="wildcard-flip-btn shadow-sm" 
+                                                     (click)="flip(prop)" 
+                                                     title="Flip Wildcard color">
+                                                    🔄
+                                                </div>
+
+                                                <!-- Multi-Color Wildcard Selector -->
+                                                <div *ngIf="isWildcardProper(prop) && player.id === currentPlayer?.id && !winner" class="mt-1">
+                                                    <select class="form-select form-select-sm color-select" 
+                                                            [(ngModel)]="prop.currentColor" 
+                                                            (change)="changeColor(prop, prop.currentColor)">
+                                                        <option *ngFor="let color of prop.colors" [value]="color">
+                                                            {{ color | titlecase }}
+                                                        </option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div *ngIf="player.properties.length === 0" class="text-muted small py-3">No properties played yet</div>
+                                    </div>
                                 </div>
                             </div>
 
-                            <!-- Bank -->
-                            <div class="col-2">
-                                <h6 class="card-title">Money: {{ getBankTotal(player) }}</h6>
-                                <div class="d-flex flex-wrap gap-2">
-                                    <img *ngFor="let prop of player.bank" [src]="'assets/' + prop.imageName" [alt]="prop.name" class="card-img" (click)="selectCard(player, prop)">
+                            <!-- Bank Area -->
+                            <div class="col-lg-2 col-md-4">
+                                <div class="zone-box p-3 rounded h-100 bank-zone">
+                                    <div class="zone-title fw-bold text-success mb-2 small text-uppercase">
+                                        💰 Bank ({{ getBankTotal(player) }}M)
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 cards-lane">
+                                        <div *ngFor="let card of player.bank" class="card-slot">
+                                            <div class="card-container">
+                                                <img [src]="'assets/' + card.imageName" 
+                                                     [alt]="card.name" 
+                                                     class="card-img-bank rounded shadow-sm" 
+                                                     (click)="selectCard(player, card)"
+                                                     [title]="card.name + ' (' + card.value + 'M)'">
+                                            </div>
+                                        </div>
+                                        <div *ngIf="player.bank.length === 0" class="text-muted small py-3">Bank empty</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -109,21 +227,24 @@
                 </div>
             </div>
         </div>
-
     </div>
 
-    <!-- Floating Current Player Display -->
-    <div *ngIf="currentPlayer" class="floating-card position-fixed bottom-0 start-25 mb-5 text-center bg-white bg-rounded">
-        <h4>Current Player: {{ currentPlayer.name || "Waiting..." }}</h4>
-    </div>
-
-    <!-- Floating Pass Button & Current Actions -->
-    <div class="floating-card position-fixed bottom-0 end-0 m-3 mb-5 me-5 text-end">
-        <div class="mb-2">
-        <strong>Current Actions:</strong> {{ actions }}
+    <!-- Floating Current Turn Action Dock (Bottom-Right) -->
+    <div *ngIf="start && !winner && currentPlayer" class="action-dock position-fixed bottom-0 end-0 m-4 p-3 rounded-4 shadow-lg bg-white border">
+        <div class="d-flex align-items-center gap-3">
+            <div class="text-end">
+                <div class="fw-bold text-dark">{{ currentPlayer.name }}</div>
+                <div class="d-flex align-items-center gap-1 justify-content-end mt-1">
+                    <span class="small text-muted me-1">Actions:</span>
+                    <span *ngFor="let pip of [1, 2, 3]; let idx = index" 
+                          class="action-pip" 
+                          [ngClass]="{'pip-active': idx < actions, 'pip-empty': idx >= actions}">
+                    </span>
+                </div>
+            </div>
+            <button class="btn btn-danger btn-lg px-4 fw-bold pass-btn shadow" (click)="endTurn()">
+                Pass ⏩
+            </button>
         </div>
-        <button tabindex=0 class="btn btn-danger btn-lg px-5" (click)="endTurn()">
-        Pass
-        </button>
     </div>
 </div>

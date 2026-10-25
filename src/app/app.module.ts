@@ -10,6 +10,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
 import { PlayComponent } from './play/play.component';
+import { RulesComponent } from './rules/rules.component';
 import { FormsModule } from '@angular/forms';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
@@ -18,7 +19,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     AppComponent,
     CardsComponent,
     TemplateComponent,
-    PlayComponent
+    PlayComponent,
+    RulesComponent
   ],
   imports: [
     BrowserModule,

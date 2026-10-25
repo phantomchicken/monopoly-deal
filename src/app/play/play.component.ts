@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { GameService } from '../game.service';
 import { Player } from '../classes/player';
 import { Card, PropertyCard } from '../classes/card';
+import confetti from 'canvas-confetti';
 
 @Component({
   selector: 'app-play',
@@ -21,6 +22,7 @@ export class PlayComponent implements OnInit {
   public currentPlayerIndex: number = 0;
   public currentPlayer: Player | undefined;
   public actions: number = 3;
+  public winner: Player | null = null;
 
   public from: Player | undefined;
   public to: Player | undefined;
@@ -44,6 +46,7 @@ export class PlayComponent implements OnInit {
   pendingActionCard: Card | null = null;
   
   ngOnInit(): void {
+
     this.gameService.deck$.subscribe(deck => {
       this.deck = deck;
     });
@@ -58,6 +61,13 @@ export class PlayComponent implements OnInit {
 
     this.gameService.actions$.subscribe(actions => {
       this.actions = actions;
+    });
+
+    this.gameService.winner$.subscribe(winner => {
+      this.winner = winner;
+      if (winner) {
+        this.triggerVictoryConfetti();
+      }
     });
 
     this.gameService.paymentQueue$.subscribe(queue => {
@@ -106,16 +116,62 @@ export class PlayComponent implements OnInit {
     this.gameService.isJustSayNoActive$.subscribe(activeState => {
       this.targetPlayerForJustSayNo = activeState?.from ?? null;
     });
+
+    // Automatically initialize game on first load so the user lands on a fully ready game!
+    this.setup();
+  }
+
+  fireConfetti(options?: any) {
+    const fn = (confetti as any)?.default || confetti;
+    if (typeof fn === 'function') {
+      fn(options);
+    }
+  }
+
+  triggerVictoryConfetti() {
+    const duration = 4 * 1000;
+    const animationEnd = Date.now() + duration;
+    const colors = ['#bb0000', '#ffffff', '#00bb00', '#0000bb', '#ffd700'];
+
+    const interval: any = setInterval(() => {
+      const timeLeft = animationEnd - Date.now();
+      if (timeLeft <= 0) {
+        return clearInterval(interval);
+      }
+      const particleCount = 40 * (timeLeft / duration);
+      this.fireConfetti({
+        particleCount,
+        angle: 60,
+        spread: 60,
+        origin: { x: 0, y: 0.7 },
+        colors
+      });
+      this.fireConfetti({
+        particleCount,
+        angle: 120,
+        spread: 60,
+        origin: { x: 1, y: 0.7 },
+        colors
+      });
+    }, 250);
   }
 
   setup() {
+    this.name = (this.name && this.name.trim()) ? this.name.trim() : 'Nino';
     this.gameService.setup(this.name, this.numberOfPlayers);
     this.players = this.gameService.game.players;
-    this.start = true;
+    this.currentPlayer = this.gameService.currentPlayer;
     this.deck = this.gameService.game.deck;
+    this.start = true;
+  }
+
+  restartGame() {
+    this.setup();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   playCard(player: Player, card: Card) {
+    if (this.winner) return;
     if (player.id !== this.currentPlayer?.id) {
       console.log("not your turn");
       return;
@@ -124,12 +180,14 @@ export class PlayComponent implements OnInit {
   }
 
   pay() {
+    if (this.winner) return;
     if (!this.from || !this.to || !this.amount) return;
     this.statusMessage = this.gameService.pay(this.from, this.to, this.amount);
     this.decisionState = "paying";
   }
   
   selectCard(player: Player, card: Card) {
+    if (this.winner) return;
     if (this.decisionState === 'paying') {
       this.gameService.selectCardForPayment(player, card);
     } else if (this.isPropertySelectable && card.type === 'property') {
@@ -154,6 +212,7 @@ export class PlayComponent implements OnInit {
   }
 
   endTurn() {
+    if (this.winner) return;
     this.gameService.endTurn();
   }
 
@@ -161,7 +220,12 @@ export class PlayComponent implements OnInit {
     return player.bank.reduce((sum, card) => sum + (card.value || 0), 0);
   }
 
+  getFullSetCount(player: Player): number {
+    return this.gameService.fullSets(player);
+  }
+
   addToBank(player: Player, card: Card) {
+    if (this.winner) return;
     if (player.id !== this.currentPlayer?.id) {
       console.log("not your turn");
       return;
@@ -170,18 +234,22 @@ export class PlayComponent implements OnInit {
   }
 
   selectDebtCollector(player: Player) {
+    if (this.winner) return;
     this.gameService.selectDebtCollector(player);
   }
 
   selectTargetProperty(player: Player, property: PropertyCard) {
+    if (this.winner) return;
     this.gameService.selectTargetProperty(player, property);
   }
 
   selectOwnProperty(property: PropertyCard) {
+    if (this.winner) return;
     this.gameService.selectOwnProperty(property);
   }
 
   flip(card: Card) {
+    if (this.winner) return;
     this.gameService.flip(card);
   }
 
@@ -203,10 +271,12 @@ export class PlayComponent implements OnInit {
   }
   
   changeColor(card: Card, color: string) {
+    if (this.winner) return;
     this.gameService.changeCurrentColor(card, color);
   }
 
   sayNo(useJustSayNo: boolean) {
+    if (this.winner) return;
     this.gameService.sayNo(useJustSayNo);
   }
 }

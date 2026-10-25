@@ -27,7 +27,9 @@ export class GameService {
   public playerIndex: number = 0;
   public currentPlayer: Player | undefined;
   public propertySetSizes = require('../assets/sets.json');
+  public static cardsData: Card[] = require('../assets/cards.json');
   public discardAmount: number = 0;
+  public winner: Player | null = null;
 
   decisionState: 'playing' | 'paying' | null = null;
   selectedCard: Card | null = null;
@@ -49,6 +51,9 @@ export class GameService {
   set actions(val: number) {
     this.actionsSubject.next(val);
   }
+
+  private winnerSubject = new BehaviorSubject<Player | null>(null);
+  winner$ = this.winnerSubject.asObservable();
 
   private deckSubject = new BehaviorSubject<Card[]>([]);
   deck$ = this.deckSubject.asObservable();
@@ -99,38 +104,47 @@ export class GameService {
   isJustSayNoActive$ = this.isJustSayNoActiveSubject.asObservable();
 
   setup(name: string, numberOfPlayers: number) {
-    if (this.game.players.length === 0) {
-      this.playerNames.unshift(name);
+    this.winner = null;
+    this.winnerSubject.next(null);
+    this.discardAmount = 0;
+    this.game.discard = [];
+    this.discardSubject.next(this.game.discard);
+    this.paymentQueue = [];
+    this.paymentQueueSubject.next(this.paymentQueue);
+    this.isJustSayNoActiveSubject.next(undefined);
+    this.resetPropertySelection();
+    this.decisionState = 'playing';
 
-      for (let i = 0; i < numberOfPlayers; i++) {
-        let playerName = this.playerNames[i];
-        this.game.players.push(new Player(i + 1, playerName));
-      }
-
-      this.propertySetSizeMap = new Map(
-        this.propertySetSizes.map((p: { color: string; setSize: number }) => [p.color, p.setSize])
-      );
+    const safeName = (name && name.trim()) ? name.trim() : 'Nino';
+    this.game.players = [];
+    const names = [safeName, 'Ariana', 'Bojan', 'Kemal', 'Myra'];
+    for (let i = 0; i < numberOfPlayers; i++) {
+      this.game.players.push(new Player(i + 1, names[i] || `Player ${i + 1}`));
     }
 
-    this.cardService.getCards().subscribe((cards) => {
-      this.game.deck = this.shuffle([...cards]);
-      this.deckSubject.next(this.game.deck);
+    this.propertySetSizeMap = new Map(
+      this.propertySetSizes.map((p: { color: string; setSize: number }) => [p.color, p.setSize])
+    );
 
-      this.draw(this.game.players[0], 7);
-      for (let i = 1; i < numberOfPlayers; i++) {
-        this.draw(this.game.players[i], 5);
-      }
+    // Initialize deck synchronously with cloned cards for immediate, rock-solid readiness
+    const freshCards: Card[] = JSON.parse(JSON.stringify(GameService.cardsData));
+    this.game.deck = this.shuffle(freshCards);
+    this.deckSubject.next(this.game.deck);
 
-      this.playerIndex = 0;
-      this.currentPlayer = this.game.players[0];
-      this.currentPlayerSubject.next(this.game.players[0]);
-      this.actionsSubject.next(3);
-      this.statusMessageSubject.next(`Game started! ${this.currentPlayer.name}'s turn.`);
-    });
+    this.draw(this.game.players[0], 7);
+    for (let i = 1; i < numberOfPlayers; i++) {
+      this.draw(this.game.players[i], 5);
+    }
+
+    this.playerIndex = 0;
+    this.currentPlayer = this.game.players[0];
+    this.currentPlayerSubject.next(this.game.players[0]);
+    this.actionsSubject.next(3);
+    this.statusMessageSubject.next(`Game started! ${this.currentPlayer.name}'s turn.`);
   }
 
   decrementAction() {
-    // Discarding after turn never consumes player actions
+    if (this.winner) return;
     if (this.discardAmount > 0) return;
 
     const remaining = this.actionsSubject.value - 1;
@@ -142,9 +156,10 @@ export class GameService {
   }
 
   endTurn() {
+    if (this.winner) return;
+
     const current = this.game.players[this.playerIndex];
 
-    // If player has more than 7 cards, prompt to discard excess cards before advancing
     if (current && current.hand.length > 7) {
       this.discardAmount = current.hand.length - 7;
       this.statusMessageSubject.next(`${current.name} has more than 7 cards (${current.hand.length}). Please discard ${this.discardAmount} card(s).`);
@@ -155,7 +170,6 @@ export class GameService {
     this.playerIndex = (this.playerIndex + 1) % this.game.players.length;
     const nextPlayer = this.game.players[this.playerIndex];
 
-    // Draw cards for the new player's turn (5 if hand is empty, else 2)
     if (nextPlayer.hand.length === 0) {
       this.draw(nextPlayer, 5);
     } else {
@@ -173,7 +187,12 @@ export class GameService {
   }
 
   playCard(player: Player, card: Card) {
-    // 1. Discard mode (when hand > 7 at turn end)
+    if (this.winner) {
+      this.statusMessageSubject.next(`Game over! ${this.winner.name} won! Please restart above.`);
+      return;
+    }
+
+    // Discard mode (when hand > 7 at turn end)
     if (this.discardAmount > 0) {
       this.game.discard.push(card);
       this.discardSubject.next(this.game.discard);
@@ -210,6 +229,7 @@ export class GameService {
         player.properties.push(propCard);
         player.hand.splice(cardIndex, 1);
         this.statusMessageSubject.next(`${player.name} played ${propCard.name}.`);
+        this.checkWinCondition(player);
         this.decrementAction();
         break;
       }
@@ -223,7 +243,6 @@ export class GameService {
       case 'action': {
         const success = this.playActionCard(card);
         if (!success) {
-          // Card could not be played, keep it in hand
           return;
         }
         player.hand.splice(cardIndex, 1);
@@ -235,12 +254,23 @@ export class GameService {
       }
     }
 
-    if (this.fullSets(player) >= 3) {
-      this.statusMessageSubject.next(`${player.name} has three completed full sets and has won the game! 🎉`);
+    this.checkWinCondition(player);
+  }
+
+  checkWinCondition(player: Player): boolean {
+    if (this.winner) return true;
+    const sets = this.fullSets(player);
+    if (sets >= 3) {
+      this.winner = player;
+      this.winnerSubject.next(player);
+      this.statusMessageSubject.next(`🏆 ${player.name} has three completed full sets and has WON THE GAME! 🎉`);
+      return true;
     }
+    return false;
   }
 
   bankActionCard(player: Player, card: Card) {
+    if (this.winner) return;
     if (player.id !== this.game.players[this.playerIndex]?.id) {
       this.statusMessageSubject.next('Not your turn!');
       return;
@@ -277,6 +307,8 @@ export class GameService {
   }
 
   playActionCard(card: Card): boolean {
+    if (this.winner) return false;
+
     const currentPlayer = this.game.players[this.playerIndex];
     const otherPlayers = this.game.players.filter(p => p !== currentPlayer);
 
@@ -295,11 +327,9 @@ export class GameService {
 
       case "It's My Birthday":
         this.currentActionCard = card;
-        let anyPayers = false;
         otherPlayers.forEach(p => {
           if (this.getTotalPayableAmount(p) > 0) {
             this.paymentQueue.push({ from: p, to: currentPlayer, amount: 2 });
-            anyPayers = true;
           }
         });
 
@@ -309,7 +339,6 @@ export class GameService {
         return true;
 
       case 'Debt Collector': {
-        const canPay = otherPlayers.some(p => this.getTotalPayableAmount(p) > 0);
         if (otherPlayers.length === 0) {
           this.statusMessageSubject.next('No opponents available!');
           return false;
@@ -326,7 +355,7 @@ export class GameService {
             const color = this.getCurrentColor(prop);
             const setSize = this.propertySetSizeMap.get(color) || COLOR_RENT_MAP.get(color)?.setSize || 0;
             const count = p.properties.filter(cp => this.getCurrentColor(cp) === color).length;
-            return count < setSize; // Can only steal if not part of a full set
+            return count < setSize;
           });
         });
 
@@ -400,7 +429,6 @@ export class GameService {
         return false;
 
       default:
-        // Handle Rent cards (e.g., "Rent Pink & Orange", "Rent Wildcard")
         if (/Rent/.test(card.name)) {
           let name = card.name.toLowerCase().replace('rent ', '');
           let colors = name === 'wildcard'
@@ -465,6 +493,8 @@ export class GameService {
   }
 
   selectDebtCollector(player: Player) {
+    if (this.winner) return;
+
     const currentPlayer = this.game.players[this.playerIndex];
     if (!this.isDebtCollectorSelectableSubject.value || player === currentPlayer) {
       return;
@@ -516,6 +546,7 @@ export class GameService {
   }
 
   selectCardForPayment(player: Player, card: Card) {
+    if (this.winner) return;
     if (!this.paymentQueue.length || this.paymentQueue[0].from !== player) return;
 
     let { from, to, amount } = this.paymentQueue[0];
@@ -545,6 +576,7 @@ export class GameService {
 
     if (paid) {
       this.paymentQueue[0].amount -= cardValue;
+      this.checkWinCondition(to);
       if (this.paymentQueue[0].amount <= 0 || this.getTotalPayableAmount(from) === 0) {
         this.statusMessageSubject.next(`Payment complete! ${to.name} received payment.`);
         this.paymentQueue.shift();
@@ -559,7 +591,6 @@ export class GameService {
   }
 
   processNextPayment() {
-    // Purge any debtor with nothing left to pay
     while (this.paymentQueue.length && this.getTotalPayableAmount(this.paymentQueue[0].from) === 0) {
       const skipped = this.paymentQueue.shift();
       this.statusMessageSubject.next(`${skipped?.from.name} has nothing to pay.`);
@@ -600,6 +631,7 @@ export class GameService {
   }
 
   selectTargetProperty(player: Player, property: PropertyCard) {
+    if (this.winner) return;
     if (!this.isPropertySelectableSubject.value) return;
 
     const currentPlayer = this.game.players[this.playerIndex];
@@ -610,14 +642,13 @@ export class GameService {
     const sameColorProps = player.properties.filter(p => this.getCurrentColor(p) === color);
     const isFullSet = sameColorProps.length >= setSize;
 
-    // Handle Deal Breaker
+    // Deal Breaker
     if (this.currentActionCard?.name === 'Deal Breaker') {
       if (!isFullSet) {
         this.statusMessageSubject.next('You can only steal a FULL completed set with Deal Breaker!');
         return;
       }
 
-      // Check if target player has Just Say No
       if (this.playerHasJustSayNo(player)) {
         this.isJustSayNoActiveSubject.next({
           from: player,
@@ -629,23 +660,22 @@ export class GameService {
         });
         this.statusMessageSubject.next(`${currentPlayer.name} wants to steal ${player.name}'s ${color} set. Say No?`);
       } else {
-        // Execute set steal immediately
         player.properties = player.properties.filter(p => this.getCurrentColor(p) !== color);
         currentPlayer.properties.push(...sameColorProps);
         this.statusMessageSubject.next(`${currentPlayer.name} stole the complete ${color} set from ${player.name}!`);
         this.resetPropertySelection();
+        this.checkWinCondition(currentPlayer);
         this.decrementAction();
       }
       return;
     }
 
-    // For Sly Deal and Forced Deal, stealing from a full set is NOT allowed
     if (isFullSet) {
       this.statusMessageSubject.next('Cannot steal or swap cards from a completed full set!');
       return;
     }
 
-    // Handle Forced Deal - Step 1: Select opponent property
+    // Forced Deal - Step 1: Select opponent property
     if (this.currentActionCard?.name === 'Forced Deal') {
       this.selectedTargetPlayerSubject.next(player);
       this.selectedPropertySubject.next(property);
@@ -653,7 +683,7 @@ export class GameService {
       return;
     }
 
-    // Handle Sly Deal - Steal single property
+    // Sly Deal
     if (this.currentActionCard?.name === 'Sly Deal') {
       if (this.playerHasJustSayNo(player)) {
         this.isJustSayNoActiveSubject.next({
@@ -670,12 +700,14 @@ export class GameService {
         currentPlayer.properties.push(property);
         this.statusMessageSubject.next(`${currentPlayer.name} stole ${property.name} from ${player.name}!`);
         this.resetPropertySelection();
+        this.checkWinCondition(currentPlayer);
         this.decrementAction();
       }
     }
   }
 
   selectOwnProperty(property: PropertyCard) {
+    if (this.winner) return;
     if (!this.isForcedDealActiveSubject.value || !this.selectedPropertySubject.value) return;
 
     const currentPlayer = this.game.players[this.playerIndex];
@@ -683,7 +715,6 @@ export class GameService {
     const targetProperty = this.selectedPropertySubject.value;
 
     if (targetPlayer && targetProperty) {
-      // Check if target player (victim) has Just Say No
       if (this.playerHasJustSayNo(targetPlayer)) {
         this.isJustSayNoActiveSubject.next({
           from: targetPlayer,
@@ -695,7 +726,6 @@ export class GameService {
         });
         this.statusMessageSubject.next(`${currentPlayer.name} wants to swap ${property.name} for ${targetPlayer.name}'s ${targetProperty.name}. Say No?`);
       } else {
-        // Execute swap immediately
         currentPlayer.properties = currentPlayer.properties.filter(p => p !== property);
         targetPlayer.properties = targetPlayer.properties.filter(p => p !== targetProperty);
         currentPlayer.properties.push(targetProperty);
@@ -703,6 +733,7 @@ export class GameService {
 
         this.statusMessageSubject.next(`${currentPlayer.name} swapped ${property.name} for ${targetPlayer.name}'s ${targetProperty.name}.`);
         this.resetPropertySelection();
+        this.checkWinCondition(currentPlayer);
         this.decrementAction();
       }
     }
@@ -732,6 +763,7 @@ export class GameService {
   }
 
   flip(card: Card) {
+    if (this.winner) return;
     const propertyCard = card as PropertyCard;
     if (!propertyCard.currentColor) {
       propertyCard.currentColor = propertyCard.colors[0];
@@ -743,6 +775,7 @@ export class GameService {
       propertyCard.rentValues = colorInfo.rentValues;
       propertyCard.setSize = colorInfo.setSize;
     }
+    this.checkWinCondition(this.game.players[this.playerIndex]);
   }
 
   getCurrentColor(card: PropertyCard): string {
@@ -758,6 +791,7 @@ export class GameService {
   }
 
   changeCurrentColor(card: Card, newColor: string) {
+    if (this.winner) return;
     const propCard = card as PropertyCard;
     if (propCard.colors.includes(newColor)) {
       propCard.currentColor = newColor;
@@ -767,9 +801,12 @@ export class GameService {
         propCard.setSize = colorInfo.setSize;
       }
     }
+    this.checkWinCondition(this.game.players[this.playerIndex]);
   }
 
   selectPropertySetForBuilding(property: PropertyCard) {
+    if (this.winner) return;
+
     const currentPlayer = this.game.players[this.playerIndex];
     const color = this.getCurrentColor(property);
 
@@ -819,13 +856,14 @@ export class GameService {
   }
 
   sayNo(useJustSayNo: boolean) {
+    if (this.winner) return;
+
     const activeState = this.isJustSayNoActiveSubject.value;
     if (!activeState) return;
 
     const { from, to, amount, fromCards, toCards, actionType } = activeState;
 
     if (useJustSayNo) {
-      // Discard Just Say No from defender's hand
       const jsnIdx = from.hand.findIndex(c => c.name === 'Just Say No');
       if (jsnIdx !== -1) {
         const [jsnCard] = from.hand.splice(jsnIdx, 1);
@@ -836,19 +874,16 @@ export class GameService {
       this.statusMessageSubject.next(`${from.name} played Just Say No! The action was cancelled.`);
 
       if (actionType === 'payment') {
-        // Remove defender from payment queue
         this.paymentQueue = this.paymentQueue.filter(p => !(p.from === from && p.to === to && p.amount === amount));
         this.paymentQueueSubject.next(this.paymentQueue);
         this.isJustSayNoActiveSubject.next(undefined);
         this.processNextPayment();
       } else {
-        // The action card attack was negated; attacker still used their action
         this.resetPropertySelection();
         this.isJustSayNoActiveSubject.next(undefined);
         this.decrementAction();
       }
     } else {
-      // Defender accepts the action
       this.isJustSayNoActiveSubject.next(undefined);
 
       if (actionType === 'payment') {
@@ -859,6 +894,7 @@ export class GameService {
         to.properties.push(...fromCards);
         this.statusMessageSubject.next(`${to.name} stole the ${color} set from ${from.name}!`);
         this.resetPropertySelection();
+        this.checkWinCondition(to);
         this.decrementAction();
       } else if (actionType === 'sly-deal') {
         const stolen = fromCards[0];
@@ -866,6 +902,7 @@ export class GameService {
         to.properties.push(stolen);
         this.statusMessageSubject.next(`${to.name} stole ${stolen.name} from ${from.name}!`);
         this.resetPropertySelection();
+        this.checkWinCondition(to);
         this.decrementAction();
       } else if (actionType === 'forced-deal') {
         const targetProp = fromCards[0];
@@ -876,6 +913,7 @@ export class GameService {
         from.properties.push(attackerProp);
         this.statusMessageSubject.next(`${to.name} swapped ${attackerProp.name} for ${from.name}'s ${targetProp.name}.`);
         this.resetPropertySelection();
+        this.checkWinCondition(to);
         this.decrementAction();
       }
     }
